@@ -1,6 +1,8 @@
 package com.shoplab.domain.auth.api;
 
 import com.shoplab.domain.auth.application.AuthService;
+import com.shoplab.domain.auth.dto.LoginRequest;
+import com.shoplab.domain.auth.dto.LoginResponse;
 import com.shoplab.domain.auth.dto.SignupRequest;
 import com.shoplab.domain.auth.dto.SignupResponse;
 import com.shoplab.global.common.ApiResponse;
@@ -24,5 +26,10 @@ public class AuthController {
     public ResponseEntity<ApiResponse<SignupResponse>> signup(@Valid @RequestBody SignupRequest request) {
         SignupResponse response = authService.signup(request);
         return ResponseEntity.status(HttpStatus.CREATED).body(ApiResponse.ok(response));
+    }
+
+    @PostMapping("/login")
+    public ApiResponse<LoginResponse> login(@Valid @RequestBody LoginRequest request) {
+        return ApiResponse.ok(authService.login(request));
     }
 }

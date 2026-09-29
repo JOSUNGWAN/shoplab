@@ -1,11 +1,13 @@
 package com.shoplab.domain.auth.application;
 
+import com.shoplab.domain.auth.dto.LoginRequest;
 import com.shoplab.domain.auth.dto.SignupRequest;
 import com.shoplab.domain.auth.dto.SignupResponse;
 import com.shoplab.domain.member.domain.Member;
 import com.shoplab.domain.member.domain.MemberRepository;
 import com.shoplab.global.exception.BusinessException;
 import com.shoplab.global.exception.ErrorCode;
+import com.shoplab.global.security.JwtProvider;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -13,6 +15,8 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
+
+import java.util.Optional;
 
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.assertj.core.api.Assertions.assertThatThrownBy;
@@ -35,6 +39,9 @@ class AuthServiceTest {
 
     private final SignupRequest request =
             new SignupRequest("test@shoplab.com", "Test1234!", "홍길동", "010-1234-5678");
+
+    @Mock
+    private JwtProvider jwtProvider;
 
     @Test
     @DisplayName("회원가입 성공 시 비밀번호를 암호화해서 저장한다")
@@ -61,5 +68,20 @@ class AuthServiceTest {
                 .isEqualTo(ErrorCode.DUPLICATE_EMAIL);
 
         verify(memberRepository, never()).save(any());
+    }
+
+    @Test
+    @DisplayName("비밀번호가 틀리면 INVALID_LOGIN 예외가 발생한다")
+    void loginWrongPassword() {
+        Member member = Member.create("test@shoplab.com", "encoded", "홍길동", null);
+        given(memberRepository.findByEmail("test@shoplab.com")).willReturn(Optional.of(member));
+        given(passwordEncoder.matches("Wrong1234!", "encoded")).willReturn(false);
+
+        assertThatThrownBy(() -> authService.login(new LoginRequest("test@shoplab.com", "Wrong1234!")))
+                .isInstanceOf(BusinessException.class)
+                .extracting("errorCode")
+                .isEqualTo(ErrorCode.INVALID_LOGIN);
+
+        verify(jwtProvider, never()).createAccessToken(any(), any());
     }
 }
