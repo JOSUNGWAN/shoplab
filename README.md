@@ -1,7 +1,7 @@
 # ShopLab
 
 Spring Boot와 React로 만드는 쇼핑몰 포트폴리오 프로젝트입니다.
-사용자 쇼핑몰과 관리자 페이지를 구현하고, 선착순 타임딜의 **재고 동시성 문제** 해결을 핵심 과제로 삼습니다.
+사용자 쇼핑몰과 관리자 페이지를 구현하고, 선착순 타임딜의 **재고 동시성 문제** 해결이 핵심 과제 입니다.
 
 > 현재 개발 진행 중입니다.
 
@@ -20,13 +20,13 @@ Spring Boot와 React로 만드는 쇼핑몰 포트폴리오 프로젝트입니�
 
 ## 기술 스택
 
-| 구분 | 기술 |
-| --- | --- |
-| Backend | Java 21, Spring Boot 4.1, Spring Data JPA, Spring Security, JWT (jjwt) |
+| 구분     | 기술                                                                                                   |
+| -------- | ------------------------------------------------------------------------------------------------------ |
+| Backend  | Java 21, Spring Boot 4.1, Spring Data JPA, Spring Security, JWT (jjwt)                                 |
 | Frontend | React 19, TypeScript, Vite, React Router, TanStack Query, Zustand, React Hook Form + Zod, Tailwind CSS |
-| Database | Oracle 21c XE, Redis 7 |
-| Infra | Docker, Docker Compose |
-| Test | JUnit 5, Mockito |
+| Database | Oracle 21c XE, Redis 7                                                                                 |
+| Infra    | Docker, Docker Compose                                                                                 |
+| Test     | JUnit 5, Mockito                                                                                       |
 
 ## 프로젝트 구조
 
@@ -86,9 +86,9 @@ npm run dev
 
 ## API
 
-| Method | URL | 설명 | 인증 |
-| --- | --- | --- | --- |
-| GET | `/api/health` | 서버 상태 확인 | - |
-| POST | `/api/auth/signup` | 회원가입 | - |
-| POST | `/api/auth/login` | 로그인 (Access Token 발급) | - |
-| GET | `/api/members/me` | 내 정보 조회 | 필요 |
+| Method | URL                | 설명                       | 인증 |
+| ------ | ------------------ | -------------------------- | ---- |
+| GET    | `/api/health`      | 서버 상태 확인             | -    |
+| POST   | `/api/auth/signup` | 회원가입                   | -    |
+| POST   | `/api/auth/login`  | 로그인 (Access Token 발급) | -    |
+| GET    | `/api/members/me`  | 내 정보 조회               | 필요 |
