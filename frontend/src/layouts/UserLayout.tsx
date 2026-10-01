@@ -1,6 +1,7 @@
 import { useQueryClient } from '@tanstack/react-query'
 import { Link, Outlet, useNavigate } from 'react-router'
 import { useAuthStore } from '../stores/authStore'
+import { logout as logoutApi } from '../features/auth/api'
 
 export default function UserLayout() {
   const accessToken = useAuthStore((state) => state.accessToken)
@@ -8,10 +9,14 @@ export default function UserLayout() {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
 
-  const handleLogout = () => {
-    logout()
-    queryClient.removeQueries({ queryKey: ['me'] })
-    navigate('/')
+  const handleLogout = async () => {
+    try {
+      await logoutApi()
+    } finally {
+      logout()
+      queryClient.removeQueries({ queryKey: ['me'] })
+      navigate('/')
+    }
   }
 
   return (

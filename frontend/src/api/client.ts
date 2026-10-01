@@ -1,12 +1,35 @@
-import axios, { isAxiosError } from 'axios'
+import axios, { isAxiosError, type InternalAxiosRequestConfig } from 'axios'
 import { useAuthStore } from '../stores/authStore'
+import type { ApiResponse } from '../types/api'
+import type { LoginResponse } from '../features/auth/types'
 
 export const api = axios.create({
   baseURL: '/api',
   headers: { 'Content-Type': 'application/json' },
 })
 
-// 요청 보내기 전: 토큰이 있으면 Authorization 헤더 추가
+// 재발급 전용 (인터셉터 없음 → 재발급 요청이 다시 재발급을 부르는 무한 루프 방지)
+const authClient = axios.create({ baseURL: '/api' })
+
+// 동시에 여러 요청이 401을 받아도 재발급은 한 번만
+let refreshPromise: Promise<string> | null = null
+
+export function refreshAccessToken(): Promise<string> {
+  if (!refreshPromise) {
+    refreshPromise = authClient
+      .post<ApiResponse<LoginResponse>>('/auth/reissue')
+      .then(({ data }) => {
+        const token = data.data.accessToken
+        useAuthStore.getState().setAccessToken(token)
+        return token
+      })
+      .finally(() => {
+        refreshPromise = null
+      })
+  }
+  return refreshPromise
+}
+
 api.interceptors.request.use((config) => {
   const token = useAuthStore.getState().accessToken
   if (token) {
@@ -15,18 +38,34 @@ api.interceptors.request.use((config) => {
   return config
 })
 
-// 응답 받은 후: 401이면 로그아웃 처리 (토큰 만료 등)
+type RetryConfig = InternalAxiosRequestConfig & { _retry?: boolean }
+
 api.interceptors.response.use(
   (response) => response,
-  (error) => {
-    if (isAxiosError(error) && error.response?.status === 401) {
-      useAuthStore.getState().logout()
+  async (error) => {
+    if (!isAxiosError(error) || !error.config) {
+      return Promise.reject(error)
     }
+
+    const original = error.config as RetryConfig
+    const isAuthRequest = original.url?.startsWith('/auth/')
+
+    if (error.response?.status === 401 && !original._retry && !isAuthRequest) {
+      original._retry = true
+      try {
+        const token = await refreshAccessToken()
+        original.headers.Authorization = `Bearer ${token}`
+        return api(original)
+      } catch (refreshError) {
+        useAuthStore.getState().logout()
+        return Promise.reject(refreshError)
+      }
+    }
+
     return Promise.reject(error)
   },
 )
 
-// 백엔드 공통 응답의 message를 꺼내는 함수
 export function getErrorMessage(error: unknown): string {
   if (isAxiosError(error)) {
     return error.response?.data?.message ?? '서버에 연결할 수 없습니다.'

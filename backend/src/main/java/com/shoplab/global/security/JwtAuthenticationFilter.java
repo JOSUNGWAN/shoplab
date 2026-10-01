@@ -31,14 +31,15 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             String token = header.substring(BEARER_PREFIX.length());
             try {
                 Claims claims = jwtProvider.parseClaims(token);
-                Long memberId = Long.valueOf(claims.getSubject());
-                String role = claims.get("role", String.class);
+                if (jwtProvider.isAccessToken(claims)) {
+                    Long memberId = Long.valueOf(claims.getSubject());
+                    String role = claims.get("role", String.class);
 
-                UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
-                        memberId, null, List.of(new SimpleGrantedAuthority("ROLE_" + role)));
-                SecurityContextHolder.getContext().setAuthentication(authentication);
+                    UsernamePasswordAuthenticationToken authentication = new UsernamePasswordAuthenticationToken(
+                            memberId, null, List.of(new SimpleGrantedAuthority("ROLE_" + role)));
+                    SecurityContextHolder.getContext().setAuthentication(authentication);
+                }
             } catch (JwtException | IllegalArgumentException e) {
-                // 잘못되거나 만료된 토큰: 인증 정보 없이 진행 → 보호된 API면 401
                 SecurityContextHolder.clearContext();
             }
         }

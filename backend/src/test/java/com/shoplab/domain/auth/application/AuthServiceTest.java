@@ -3,6 +3,7 @@ package com.shoplab.domain.auth.application;
 import com.shoplab.domain.auth.dto.LoginRequest;
 import com.shoplab.domain.auth.dto.SignupRequest;
 import com.shoplab.domain.auth.dto.SignupResponse;
+import com.shoplab.domain.auth.infrastructure.RefreshTokenRepository;
 import com.shoplab.domain.member.domain.Member;
 import com.shoplab.domain.member.domain.MemberRepository;
 import com.shoplab.global.exception.BusinessException;
@@ -42,6 +43,9 @@ class AuthServiceTest {
 
     @Mock
     private JwtProvider jwtProvider;
+
+    @Mock
+    private RefreshTokenRepository refreshTokenRepository;
 
     @Test
     @DisplayName("회원가입 성공 시 비밀번호를 암호화해서 저장한다")
@@ -83,5 +87,19 @@ class AuthServiceTest {
                 .isEqualTo(ErrorCode.INVALID_LOGIN);
 
         verify(jwtProvider, never()).createAccessToken(any(), any());
+    }
+
+    @Test
+    @DisplayName("이미 교체된 Refresh Token으로 재발급하면 저장된 토큰을 폐기하고 예외가 발생한다")
+    void reissueWithReusedToken() {
+        given(jwtProvider.parseRefreshToken("old-token")).willReturn(Optional.of(1L));
+        given(refreshTokenRepository.find(1L)).willReturn(Optional.of("latest-token"));
+
+        assertThatThrownBy(() -> authService.reissue("old-token"))
+                .isInstanceOf(BusinessException.class)
+                .extracting("errorCode")
+                .isEqualTo(ErrorCode.INVALID_REFRESH_TOKEN);
+
+        verify(refreshTokenRepository).delete(1L);
     }
 }

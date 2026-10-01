@@ -22,3 +22,7 @@ export async function getMe() {
   const { data } = await api.get<ApiResponse<Member>>('/members/me')
   return data.data
 }
+
+export async function logout() {
+  await api.post('/auth/logout')
+}

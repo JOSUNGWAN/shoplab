@@ -54,3 +54,12 @@ Content-Type: application/json
   "email": "test@shoplab.com",
   "password": "Wrong1234!"
 }
+
+### 8. 토큰 재발급 (로그인 쿠키 자동 전송) → 200, 새 accessToken
+POST http://localhost:8080/api/auth/reissue
+
+### 9. 로그아웃 → 200, 쿠키 삭제
+POST http://localhost:8080/api/auth/logout
+
+### 10. 로그아웃 후 재발급 → 401 INVALID_REFRESH_TOKEN
+POST http://localhost:8080/api/auth/reissue

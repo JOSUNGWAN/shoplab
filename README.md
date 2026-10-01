@@ -11,7 +11,7 @@ Spring Boot와 React로 만드는 쇼핑몰 포트폴리오 프로젝트입니�
 - [x] JWT 로그인, 내 정보 조회
 - [x] 공통 응답 형식, 전역 예외 처리 (401·403 포함)
 - [x] 회원가입·로그인 화면
-- [ ] Refresh Token (Redis, HttpOnly 쿠키)
+- [x] Refresh Token (Redis, HttpOnly 쿠키)
 - [ ] 상품·카테고리
 - [ ] 장바구니·주문·결제
 - [ ] 타임딜 (재고 동시성 제어)
