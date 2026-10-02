@@ -1,0 +1,17 @@
+### 1. 카테고리 트리
+GET http://localhost:8080/api/categories
+
+### 2. 전체 상품 (기본: 12개, 최신순)
+GET http://localhost:8080/api/products
+
+### 3. 카테고리 필터 (1번 응답에서 "의류"의 id로 바꾸기) → 상의·하의 7개
+GET http://localhost:8080/api/products?categoryId=1
+
+### 4. 페이지·정렬: 가격 낮은 순, 5개씩, 두 번째 페이지
+GET http://localhost:8080/api/products?page=1&size=5&sort=price,asc
+
+### 5. 상품 상세 (2번 응답의 id로 바꾸기)
+GET http://localhost:8080/api/products/1
+
+### 6. 없는 상품 → 404 PRODUCT_NOT_FOUND
+GET http://localhost:8080/api/products/99999
