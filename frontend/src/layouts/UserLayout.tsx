@@ -23,7 +23,10 @@ export default function UserLayout() {
     <div className="min-h-screen bg-white text-gray-900">
       <header className="border-b border-gray-200">
         <div className="mx-auto flex h-14 max-w-5xl items-center justify-between px-4">
-          <Link to="/" className="text-lg font-bold">ShopLab</Link>
+            <div className="flex items-center gap-8">
+              <Link to="/" className="text-lg font-bold">ShopLab</Link>
+              <Link to="/products" className="text-sm text-gray-700 hover:text-gray-900">상품</Link>
+            </div>
           <nav className="flex gap-4 text-sm">
             {accessToken ? (
               <button onClick={handleLogout}>로그아웃</button>

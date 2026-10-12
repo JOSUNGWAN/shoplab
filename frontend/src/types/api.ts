@@ -4,3 +4,12 @@ export type ApiResponse<T> = {
   message: string | null
   data: T
 }
+
+export type PageResponse<T> = {
+  content: T[]
+  page: number
+  size: number
+  totalElements: number
+  totalPages: number
+  hasNext: boolean
+}
