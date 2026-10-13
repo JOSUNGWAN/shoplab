@@ -12,7 +12,7 @@ Spring Boot와 React로 만드는 쇼핑몰 포트폴리오 프로젝트입니�
 - [x] 공통 응답 형식, 전역 예외 처리 (401·403 포함)
 - [x] 회원가입·로그인 화면
 - [x] Refresh Token (Redis, HttpOnly 쿠키)
-- [ ] 상품·카테고리
+- [x] 상품·카테고리
 - [ ] 장바구니·주문·결제
 - [ ] 타임딜 (재고 동시성 제어)
 - [ ] 관리자 페이지
@@ -86,14 +86,14 @@ npm run dev
 
 ## API
 
-| Method | URL                  | 설명                                           | 인증 |
-| ------ | -------------------- | ---------------------------------------------- | ---- |
-| GET    | `/api/health`        | 서버 상태 확인                                 | -    |
-| POST   | `/api/auth/signup`   | 회원가입                                       | -    |
-| POST   | `/api/auth/login`    | 로그인 (Access Token 발급, Refresh Token 쿠키) | -    |
-| POST   | `/api/auth/reissue`  | 토큰 재발급 (Refresh Token 교체)               | 쿠키 |
-| POST   | `/api/auth/logout`   | 로그아웃 (Refresh Token 삭제)                  | 쿠키 |
-| GET    | `/api/members/me`    | 내 정보 조회                                   | 필요 |
-| GET    | `/api/categories`    | 카테고리 트리                                  | -    |
-| GET    | `/api/products`      | 상품 목록 (카테고리 필터, 페이지, 정렬)        | -    |
-| GET    | `/api/products/{id}` | 상품 상세                                      | -    |
+| Method | URL                  | 설명                                                          | 인증 |
+| ------ | -------------------- | ------------------------------------------------------------- | ---- |
+| GET    | `/api/health`        | 서버 상태 확인                                                | -    |
+| POST   | `/api/auth/signup`   | 회원가입                                                      | -    |
+| POST   | `/api/auth/login`    | 로그인 (Access Token 발급, Refresh Token 쿠키)                | -    |
+| POST   | `/api/auth/reissue`  | 토큰 재발급 (Refresh Token 교체)                              | 쿠키 |
+| POST   | `/api/auth/logout`   | 로그아웃 (Refresh Token 삭제)                                 | 쿠키 |
+| GET    | `/api/members/me`    | 내 정보 조회                                                  | 필요 |
+| GET    | `/api/categories`    | 카테고리 트리                                                 | -    |
+| GET    | `/api/products`      | 상품 목록 상품 목록 (카테고리·검색어·가격 필터, 정렬, 페이지) | -    |
+| GET    | `/api/products/{id}` | 상품 상세                                                     | -    |

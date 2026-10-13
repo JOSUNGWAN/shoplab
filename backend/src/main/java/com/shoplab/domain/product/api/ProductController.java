@@ -2,13 +2,12 @@ package com.shoplab.domain.product.api;
 
 import com.shoplab.domain.product.application.ProductService;
 import com.shoplab.domain.product.dto.ProductDetailResponse;
+import com.shoplab.domain.product.dto.ProductSearchRequest;
 import com.shoplab.domain.product.dto.ProductSummaryResponse;
 import com.shoplab.global.common.ApiResponse;
 import com.shoplab.global.common.PageResponse;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
-import org.springframework.data.domain.Pageable;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.web.PageableDefault;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
@@ -20,9 +19,8 @@ public class ProductController {
 
     @GetMapping
     public ApiResponse<PageResponse<ProductSummaryResponse>> getProducts(
-            @RequestParam(required = false) Long categoryId,
-            @PageableDefault(size = 12, sort = "createdAt", direction = Sort.Direction.DESC) Pageable pageable) {
-        return ApiResponse.ok(productService.getProducts(categoryId, pageable));
+            @Valid @ModelAttribute ProductSearchRequest request) {
+        return ApiResponse.ok(productService.getProducts(request));
     }
 
     @GetMapping("/{productId}")

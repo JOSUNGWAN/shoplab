@@ -1,17 +1,35 @@
 ### 1. 카테고리 트리
 GET http://localhost:8080/api/categories
 
-### 2. 전체 상품 (기본: 12개, 최신순)
+### 2. 전체 상품 (기본: 최신순 12개)
 GET http://localhost:8080/api/products
 
-### 3. 카테고리 필터 (1번 응답에서 "의류"의 id로 바꾸기) → 상의·하의 7개
-GET http://localhost:8080/api/products?categoryId=1
+### 3. 카테고리 + 정렬 (1번 응답에서 "의류"의 id로 바꾸기)
+GET http://localhost:8080/api/products?categoryId=1&sort=PRICE_ASC
 
-### 4. 페이지·정렬: 가격 낮은 순, 5개씩, 두 번째 페이지
-GET http://localhost:8080/api/products?page=1&size=5&sort=price,asc
+### 4. 페이지: 5개씩, 두 번째 페이지
+GET http://localhost:8080/api/products?page=1&size=5
 
 ### 5. 상품 상세 (2번 응답의 id로 바꾸기)
 GET http://localhost:8080/api/products/1
 
 ### 6. 없는 상품 → 404 PRODUCT_NOT_FOUND
 GET http://localhost:8080/api/products/99999
+
+### 7. 검색어 → "셔츠"가 들어간 상품
+GET http://localhost:8080/api/products?keyword=셔츠
+
+### 8. 가격 범위 → 3만~5만 원, 낮은 가격순
+GET http://localhost:8080/api/products?minPrice=30000&maxPrice=50000&sort=PRICE_ASC
+
+### 9. 모든 조건 조합 → 의류 중 "팬츠", 4만 원 이하
+GET http://localhost:8080/api/products?categoryId=1&keyword=팬츠&maxPrice=40000
+
+### 10. 최소 > 최대 → 400 INVALID_PRICE_RANGE
+GET http://localhost:8080/api/products?minPrice=50000&maxPrice=10000
+
+### 11. 허용되지 않은 정렬 → 400 INVALID_INPUT
+GET http://localhost:8080/api/products?sort=password
+
+### 12. 페이지 크기 초과 → 400 INVALID_INPUT
+GET http://localhost:8080/api/products?size=1000

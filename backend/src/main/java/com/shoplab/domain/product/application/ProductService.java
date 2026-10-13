@@ -3,15 +3,17 @@ package com.shoplab.domain.product.application;
 import com.shoplab.domain.category.domain.CategoryRepository;
 import com.shoplab.domain.product.domain.Product;
 import com.shoplab.domain.product.domain.ProductRepository;
+import com.shoplab.domain.product.domain.ProductSearchCondition;
 import com.shoplab.domain.product.domain.ProductStatus;
 import com.shoplab.domain.product.dto.ProductDetailResponse;
+import com.shoplab.domain.product.dto.ProductSearchRequest;
 import com.shoplab.domain.product.dto.ProductSummaryResponse;
 import com.shoplab.global.common.PageResponse;
 import com.shoplab.global.exception.BusinessException;
 import com.shoplab.global.exception.ErrorCode;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,11 +31,21 @@ public class ProductService {
     private final ProductRepository productRepository;
     private final CategoryRepository categoryRepository;
 
-    public PageResponse<ProductSummaryResponse> getProducts(Long categoryId, Pageable pageable) {
-        Page<Product> page = (categoryId == null)
-                ? productRepository.findByStatusIn(VISIBLE, pageable)
-                : productRepository.findByCategoryIdInAndStatusIn(withChildren(categoryId), VISIBLE, pageable);
+    public PageResponse<ProductSummaryResponse> getProducts(ProductSearchRequest request) {
+        if (request.minPrice() != null && request.maxPrice() != null
+                && request.minPrice() > request.maxPrice()) {
+            throw new BusinessException(ErrorCode.INVALID_PRICE_RANGE);
+        }
 
+        ProductSearchCondition condition = new ProductSearchCondition(
+                request.categoryId() == null ? null : withChildren(request.categoryId()),
+                request.keyword(),
+                request.minPrice(),
+                request.maxPrice(),
+                VISIBLE,
+                request.sort());
+
+        Page<Product> page = productRepository.search(condition, PageRequest.of(request.page(), request.size()));
         return PageResponse.from(page.map(ProductSummaryResponse::from));
     }
 

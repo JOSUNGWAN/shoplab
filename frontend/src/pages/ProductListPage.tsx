@@ -3,11 +3,13 @@ import { useSearchParams } from 'react-router'
 import { Pagination } from '../components/Pagination'
 import { getCategories, getProducts } from '../features/product/api'
 import { ProductCard } from '../features/product/components/ProductCard'
+import type { ProductSort } from '../features/product/types'
+import { getErrorMessage } from '../api/client'
 
-const SORT_OPTIONS = [
-  { value: 'createdAt,desc', label: '최신순' },
-  { value: 'price,asc', label: '낮은 가격순' },
-  { value: 'price,desc', label: '높은 가격순' },
+const SORT_OPTIONS: { value: ProductSort; label: string }[] = [
+  { value: 'LATEST', label: '최신순' },
+  { value: 'PRICE_ASC', label: '낮은 가격순' },
+  { value: 'PRICE_DESC', label: '높은 가격순' },
 ]
 
 const PAGE_SIZE = 12
@@ -18,8 +20,16 @@ export default function ProductListPage() {
   // URL에서 현재 조건 읽기
   const categoryIdParam = searchParams.get('categoryId')
   const categoryId = categoryIdParam ? Number(categoryIdParam) : undefined
+  const keyword = searchParams.get('keyword') ?? undefined
+  const minPriceParam = searchParams.get('minPrice')
+  const maxPriceParam = searchParams.get('maxPrice')
+  const minPrice = minPriceParam ? Number(minPriceParam) : undefined
+  const maxPrice = maxPriceParam ? Number(maxPriceParam) : undefined
   const page = Number(searchParams.get('page') ?? 0)
-  const sort = searchParams.get('sort') ?? 'createdAt,desc'
+  const sortParam = searchParams.get('sort')
+  const sort: ProductSort = SORT_OPTIONS.some((o) => o.value === sortParam)
+    ? (sortParam as ProductSort)
+    : 'LATEST'
 
   const { data: categories } = useQuery({
     queryKey: ['categories'],
@@ -27,10 +37,10 @@ export default function ProductListPage() {
     staleTime: 5 * 60 * 1000, // 카테고리는 잘 안 바뀌니 5분간 재사용
   })
 
-  const { data, isLoading, isError } = useQuery({
-    queryKey: ['products', { categoryId, page, sort }],
-    queryFn: () => getProducts({ categoryId, page, size: PAGE_SIZE, sort }),
-    placeholderData: keepPreviousData, // 다음 페이지 로딩 중에도 이전 목록 유지
+  const { data, isLoading, isError, error } = useQuery({
+    queryKey: ['products', { categoryId, keyword, minPrice, maxPrice, page, sort }],
+    queryFn: () => getProducts({ categoryId, keyword, minPrice, maxPrice, page, size: PAGE_SIZE, sort }),
+    placeholderData: keepPreviousData,
   })
 
   // URL 조건 바꾸기 (undefined면 해당 조건 삭제)
@@ -50,6 +60,24 @@ export default function ProductListPage() {
     updateParams({ page: p === 0 ? undefined : String(p) })
     window.scrollTo({ top: 0 })
   }
+
+    const handleSearch = (e: React.FormEvent<HTMLFormElement>) => {
+    e.preventDefault()
+    const form = new FormData(e.currentTarget)
+    const value = (name: string) => {
+      const v = String(form.get(name) ?? '').trim()
+      return v === '' ? undefined : v
+    }
+    updateParams({
+      keyword: value('keyword'),
+      minPrice: value('minPrice'),
+      maxPrice: value('maxPrice'),
+      page: undefined,
+    })
+  }
+
+  const resetSearch = () =>
+    updateParams({ keyword: undefined, minPrice: undefined, maxPrice: undefined, page: undefined })
 
   const categoryClass = (id?: number) =>
     `text-left text-sm ${categoryId === id ? 'font-semibold text-gray-900' : 'text-gray-500 hover:text-gray-900'}`
@@ -82,6 +110,46 @@ export default function ProductListPage() {
       </aside>
 
       <section className="flex-1">
+        <form
+          key={`${keyword ?? ''}|${minPrice ?? ''}|${maxPrice ?? ''}`}
+          onSubmit={handleSearch}
+          className="mb-6 flex flex-wrap items-center gap-2"
+        >
+          <input
+            name="keyword"
+            defaultValue={keyword}
+            placeholder="상품명 검색"
+            className="min-w-48 flex-1 rounded-md border border-gray-300 px-3 py-2 text-sm"
+          />
+          <input
+            name="minPrice"
+            type="number"
+            min={0}
+            step={1000}
+            defaultValue={minPrice}
+            placeholder="최소 가격"
+            className="w-28 rounded-md border border-gray-300 px-3 py-2 text-sm"
+          />
+          <span className="text-gray-400">~</span>
+          <input
+            name="maxPrice"
+            type="number"
+            min={0}
+            step={1000}
+            defaultValue={maxPrice}
+            placeholder="최대 가격"
+            className="w-28 rounded-md border border-gray-300 px-3 py-2 text-sm"
+          />
+          <button type="submit" className="rounded-md bg-gray-900 px-4 py-2 text-sm text-white">
+            검색
+          </button>
+          {(keyword || minPrice !== undefined || maxPrice !== undefined) && (
+            <button type="button" onClick={resetSearch} className="px-2 py-2 text-sm text-gray-500 underline">
+              초기화
+            </button>
+          )}
+        </form>
+
         <div className="mb-6 flex items-center justify-between">
           <p className="text-sm text-gray-500">총 {data?.totalElements ?? 0}개</p>
           <select
@@ -98,9 +166,11 @@ export default function ProductListPage() {
         </div>
 
         {isLoading && <p className="py-20 text-center text-gray-500">불러오는 중...</p>}
-        {isError && <p className="py-20 text-center text-red-600">상품을 불러오지 못했습니다.</p>}
+        {isError && <p className="py-20 text-center text-red-600">{getErrorMessage(error)}</p>}
         {data && data.content.length === 0 && (
-          <p className="py-20 text-center text-gray-500">상품이 없습니다.</p>
+          <p className="py-20 text-center text-gray-500">
+            {keyword ? `'${keyword}'에 대한 검색 결과가 없습니다.` : '상품이 없습니다.'}
+          </p>
         )}
 
         {data && data.content.length > 0 && (

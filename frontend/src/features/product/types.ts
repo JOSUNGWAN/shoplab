@@ -1,4 +1,5 @@
 export type ProductStatus = 'ON_SALE' | 'SOLD_OUT' | 'HIDDEN'
+export type ProductSort = 'LATEST' | 'PRICE_ASC' | 'PRICE_DESC'
 
 export type ProductSummary = {
   id: number
@@ -29,7 +30,10 @@ export type Category = {
 
 export type ProductListParams = {
   categoryId?: number
+  keyword?: string
+  minPrice?: number
+  maxPrice?: number
   page: number
   size: number
-  sort: string
+  sort: ProductSort
 }
