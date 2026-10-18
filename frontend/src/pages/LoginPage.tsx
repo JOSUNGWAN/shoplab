@@ -11,7 +11,10 @@ import { useAuthStore } from '../stores/authStore'
 export default function LoginPage() {
   const navigate = useNavigate()
   const location = useLocation()
-  const signedUp = (location.state as { signedUp?: boolean } | null)?.signedUp
+  const state = location.state as { signedUp?: boolean; from?: string } | null
+  const signedUp = state?.signedUp
+  // 우리 사이트 안의 경로만 허용
+  const redirectTo = state?.from?.startsWith('/') ? state.from : '/'
   const setAccessToken = useAuthStore((state) => state.setAccessToken)
 
   const {
@@ -24,7 +27,7 @@ export default function LoginPage() {
     mutationFn: login,
     onSuccess: (data) => {
       setAccessToken(data.accessToken)
-      navigate('/')
+      navigate(redirectTo, { replace: true })
     },
   })
 
