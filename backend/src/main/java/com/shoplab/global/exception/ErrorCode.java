@@ -20,7 +20,12 @@ public enum ErrorCode {
     OUT_OF_STOCK(HttpStatus.BAD_REQUEST, "재고가 부족합니다."),
     CART_QUANTITY_EXCEEDED(HttpStatus.BAD_REQUEST, "한 상품은 최대 99개까지 담을 수 있습니다."),
     CART_ITEM_NOT_FOUND(HttpStatus.NOT_FOUND, "장바구니 상품을 찾을 수 없습니다."),
-    DUPLICATE_REQUEST(HttpStatus.CONFLICT, "요청이 중복되었습니다. 잠시 후 다시 시도해 주세요.");
+    DUPLICATE_REQUEST(HttpStatus.CONFLICT, "요청이 중복되었습니다. 잠시 후 다시 시도해 주세요."),
+    ORDER_NOT_FOUND(HttpStatus.NOT_FOUND, "주문을 찾을 수 없습니다."),
+    INVALID_ORDER_STATUS(HttpStatus.CONFLICT, "현재 주문 상태에서는 처리할 수 없습니다."),
+    ORDER_CANNOT_BE_CANCELED(HttpStatus.CONFLICT, "배송 준비가 시작된 주문은 취소할 수 없습니다."),
+    ORDER_ALREADY_CANCELED(HttpStatus.CONFLICT, "이미 취소된 주문입니다."),
+    ORDER_BUSY(HttpStatus.CONFLICT, "주문이 몰려 처리하지 못했습니다. 잠시 후 다시 시도해 주세요.");
 
     private final HttpStatus status;
     private final String message;

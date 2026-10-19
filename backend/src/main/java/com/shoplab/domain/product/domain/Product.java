@@ -2,6 +2,8 @@ package com.shoplab.domain.product.domain;
 
 import com.shoplab.domain.category.domain.Category;
 import com.shoplab.global.common.BaseTimeEntity;
+import com.shoplab.global.exception.BusinessException;
+import com.shoplab.global.exception.ErrorCode;
 import jakarta.persistence.*;
 import lombok.AccessLevel;
 import lombok.Getter;
@@ -57,5 +59,22 @@ public class Product extends BaseTimeEntity {
     public static Product create(Category category, String name, String description, int price,
                                  int stockQuantity, String thumbnailUrl) {
         return new Product(category, name, description, price, stockQuantity, thumbnailUrl);
+    }
+
+    public void decreaseStock(int quantity) {
+        if (quantity > this.stockQuantity) {
+            throw new BusinessException(ErrorCode.OUT_OF_STOCK);
+        }
+        this.stockQuantity -= quantity;
+        if (this.stockQuantity == 0) {
+            this.status = ProductStatus.SOLD_OUT;
+        }
+    }
+
+    public void increaseStock(int quantity) {
+        this.stockQuantity += quantity;
+        if (this.status == ProductStatus.SOLD_OUT && this.stockQuantity > 0) {
+            this.status = ProductStatus.ON_SALE;
+        }
     }
 }
