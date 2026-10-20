@@ -4,6 +4,7 @@ import com.shoplab.domain.order.application.OrderService;
 import com.shoplab.domain.order.dto.CreateOrderRequest;
 import com.shoplab.domain.order.dto.OrderDetailResponse;
 import com.shoplab.domain.order.dto.OrderSummaryResponse;
+import com.shoplab.domain.payment.application.PaymentService;
 import com.shoplab.global.common.ApiResponse;
 import com.shoplab.global.common.PageResponse;
 import jakarta.validation.Valid;
@@ -20,6 +21,7 @@ import org.springframework.web.bind.annotation.*;
 public class OrderController {
 
     private final OrderService orderService;
+    private final PaymentService paymentService;
 
     @PostMapping
     public ResponseEntity<ApiResponse<OrderDetailResponse>> createOrder(
@@ -45,6 +47,6 @@ public class OrderController {
     @PostMapping("/{orderNumber}/cancel")
     public ApiResponse<OrderDetailResponse> cancel(
             @AuthenticationPrincipal Long memberId, @PathVariable String orderNumber) {
-        return ApiResponse.ok(orderService.cancel(memberId, orderNumber));
+        return ApiResponse.ok(paymentService.cancelOrder(memberId, orderNumber));
     }
 }

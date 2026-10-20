@@ -9,6 +9,7 @@ import com.shoplab.domain.order.dto.CreateOrderRequest;
 import com.shoplab.domain.order.dto.OrderDetailResponse;
 import com.shoplab.domain.order.dto.OrderItemRequest;
 import com.shoplab.domain.order.dto.OrderSummaryResponse;
+import com.shoplab.domain.product.application.ProductLockManager;
 import com.shoplab.domain.product.domain.Product;
 import com.shoplab.domain.product.domain.ProductRepository;
 import com.shoplab.domain.product.domain.ProductStatus;
@@ -20,6 +21,7 @@ import org.springframework.data.domain.PageRequest;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -35,6 +37,7 @@ public class OrderService {
     private final OrderRepository orderRepository;
     private final ProductRepository productRepository;
     private final MemberRepository memberRepository;
+    private final ProductLockManager productLockManager;
 
     @Transactional
     public OrderDetailResponse createOrder(Long memberId, CreateOrderRequest request) {
@@ -79,19 +82,15 @@ public class OrderService {
         return OrderDetailResponse.from(findMyOrder(memberId, orderNumber));
     }
 
+    /** 스케줄러용: 결제 시간이 지난 주문 하나를 자동 취소 (주문마다 별도 트랜잭션) */
     @Transactional
-    public OrderDetailResponse cancel(Long memberId, String orderNumber) {
-        Order order = findMyOrder(memberId, orderNumber);
-
-        // 재고를 되돌리기 전에 상품 행을 잠근다 (주문 생성과 같은 순서 규칙)
-        List<Long> productIds = order.getItems().stream()
-                .map(item -> item.getProduct().getId())
-                .sorted()
-                .toList();
-        productRepository.findAllByIdInForUpdate(productIds);
-
-        order.cancel();
-        return OrderDetailResponse.from(order);
+    public void expireOrder(Long orderId) {
+        Order order = orderRepository.findByIdForUpdate(orderId).orElse(null);
+        if (order == null || !order.isPaymentExpired(LocalDateTime.now())) {
+            return; // 그사이 결제됐거나 이미 취소된 주문
+        }
+        productLockManager.lock(order.getProductIds());
+        order.expire();
     }
 
     private Order findMyOrder(Long memberId, String orderNumber) {

@@ -9,6 +9,7 @@ import lombok.AccessLevel;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 
+import java.time.Duration;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -50,6 +51,8 @@ public class Order extends BaseTimeEntity {
 
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> items = new ArrayList<>();
+
+    public static final Duration PAYMENT_TIMEOUT = Duration.ofMinutes(15);
 
     private Order(Member member, ShippingInfo shippingInfo, List<OrderItem> items) {
         this.orderNumber = generateOrderNumber();
@@ -97,5 +100,26 @@ public class Order extends BaseTimeEntity {
         String date = LocalDate.now().format(DateTimeFormatter.BASIC_ISO_DATE);
         String random = UUID.randomUUID().toString().replace("-", "").substring(0, 8).toUpperCase();
         return date + "-" + random;
+    }
+
+    public void markPaid() {
+        changeStatus(OrderStatus.PAID);
+    }
+
+    public boolean isPaymentExpired(LocalDateTime now) {
+        return status == OrderStatus.PENDING_PAYMENT && orderedAt.plus(PAYMENT_TIMEOUT).isBefore(now);
+    }
+
+    /** 시스템 취소: 결제 시간 초과 */
+    public void expire() {
+        if (status != OrderStatus.PENDING_PAYMENT) {
+            throw new BusinessException(ErrorCode.INVALID_ORDER_STATUS);
+        }
+        changeStatus(OrderStatus.CANCELED);
+        items.forEach(OrderItem::restoreStock);
+    }
+
+    public List<Long> getProductIds() {
+        return items.stream().map(item -> item.getProduct().getId()).distinct().toList();
     }
 }

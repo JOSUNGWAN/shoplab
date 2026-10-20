@@ -13,7 +13,7 @@ Spring Boot와 React로 만드는 쇼핑몰 포트폴리오 프로젝트입니�
 - [x] 회원가입·로그인 화면
 - [x] Refresh Token (Redis, HttpOnly 쿠키)
 - [x] 상품·카테고리
-- [x] 장바구니·주문 API완료, 결제 진행 중
+- [x] 장바구니·주문·결제 (주문·결제 API 완료, 결제 화면 진행 중)
 - [ ] 타임딜 (재고 동시성 제어)
 - [ ] 관리자 페이지
 - [ ] 배포 (AWS, CI/CD)
@@ -106,4 +106,5 @@ npm run dev
 | POST   | `/api/orders`                      | 주문 생성 (재고 차감)                               | 필요 |
 | GET    | `/api/orders?page=0`               | 내 주문 목록                                        | 필요 |
 | GET    | `/api/orders/{orderNumber}`        | 주문 상세                                           | 필요 |
-| POST   | `/api/orders/{orderNumber}/cancel` | 주문 취소 (재고 복구)                               | 필요 |
+| POST   | `/api/orders/{orderNumber}/cancel` | 주문 취소 (결제 환불·재고 복구)                     | 필요 |
+| POST   | `/api/payments/confirm`            | 결제 승인 (토스페이먼츠)                            | 필요 |

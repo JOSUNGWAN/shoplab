@@ -98,4 +98,29 @@ class OrderTest {
                 .extracting("errorCode")
                 .isEqualTo(ErrorCode.ORDER_ALREADY_CANCELED);
     }
+
+    @Test
+    @DisplayName("결제 대기 주문은 15분이 지나면 만료로 판단한다")
+    void paymentExpired() {
+        Order order = orderOf(Product.create(category, "티셔츠", "설명", 19000, 10, null), 1);
+
+        assertThat(order.isPaymentExpired(order.getOrderedAt().plusMinutes(14))).isFalse();
+        assertThat(order.isPaymentExpired(order.getOrderedAt().plusMinutes(16))).isTrue();
+    }
+
+    @Test
+    @DisplayName("만료 처리하면 취소되고 재고가 복구된다. 결제 완료 주문은 만료 처리할 수 없다")
+    void expire() {
+        Product product = Product.create(category, "티셔츠", "설명", 19000, 3, null);
+        Order order = orderOf(product, 3);
+
+        order.expire();
+
+        assertThat(order.getStatus()).isEqualTo(OrderStatus.CANCELED);
+        assertThat(product.getStockQuantity()).isEqualTo(3);
+
+        Order paid = orderOf(product, 1);
+        paid.markPaid();
+        assertThatThrownBy(paid::expire).isInstanceOf(BusinessException.class);
+    }
 }

@@ -19,7 +19,7 @@ public class GlobalExceptionHandler {
     @ExceptionHandler(BusinessException.class)
     public ResponseEntity<ApiResponse<Void>> handleBusiness(BusinessException e) {
         ErrorCode code = e.getErrorCode();
-        return ResponseEntity.status(code.getStatus()).body(ApiResponse.error(code));
+        return ResponseEntity.status(code.getStatus()).body(ApiResponse.error(code, e.getMessage()));
     }
 
     // @Valid 검증 실패 (이메일 형식 오류 등)

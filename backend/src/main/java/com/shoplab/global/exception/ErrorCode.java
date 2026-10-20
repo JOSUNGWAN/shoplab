@@ -25,7 +25,11 @@ public enum ErrorCode {
     INVALID_ORDER_STATUS(HttpStatus.CONFLICT, "현재 주문 상태에서는 처리할 수 없습니다."),
     ORDER_CANNOT_BE_CANCELED(HttpStatus.CONFLICT, "배송 준비가 시작된 주문은 취소할 수 없습니다."),
     ORDER_ALREADY_CANCELED(HttpStatus.CONFLICT, "이미 취소된 주문입니다."),
-    ORDER_BUSY(HttpStatus.CONFLICT, "주문이 몰려 처리하지 못했습니다. 잠시 후 다시 시도해 주세요.");
+    ORDER_BUSY(HttpStatus.CONFLICT, "주문이 몰려 처리하지 못했습니다. 잠시 후 다시 시도해 주세요."),
+    AMOUNT_MISMATCH(HttpStatus.BAD_REQUEST, "결제 금액이 주문 금액과 일치하지 않습니다."),
+    ORDER_EXPIRED(HttpStatus.CONFLICT, "결제 가능 시간이 지났습니다. 다시 주문해 주세요."),
+    PAYMENT_FAILED(HttpStatus.BAD_REQUEST, "결제 승인에 실패했습니다."),
+    PAYMENT_CANCEL_FAILED(HttpStatus.BAD_GATEWAY, "결제 취소에 실패했습니다. 잠시 후 다시 시도해 주세요.");
 
     private final HttpStatus status;
     private final String message;

@@ -1,4 +1,6 @@
 spring:
+  config:
+    import: optional:classpath:application-secret.yaml
   profiles:
     active: local
   application:
@@ -25,3 +27,8 @@ jwt:
   access-token-expiration: 30m
   refresh-token-expiration: 14d
   cookie-secure: false
+
+toss:
+  payments:
+    base-url: https://api.tosspayments.com
+    secret-key: ${TOSS_SECRET_KEY:}
