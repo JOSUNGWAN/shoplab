@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { Link } from 'react-router'
+import { Link, useNavigate } from 'react-router'
 import { getErrorMessage } from '../api/client'
 import { useCart, useRemoveCartItems, useUpdateCartItem } from '../features/cart/hooks'
 import type { CartItem } from '../features/cart/types'
@@ -12,6 +12,7 @@ export default function CartPage() {
 
   // "선택 해제한 항목"을 기억 → 새로 담긴 상품은 자동으로 선택된 상태
   const [unchecked, setUnchecked] = useState<Set<number>>(new Set())
+  const navigate = useNavigate()
 
   if (isLoading) return <p className="py-20 text-center text-gray-500">불러오는 중...</p>
   if (isError) return <p className="py-20 text-center text-red-600">{getErrorMessage(error)}</p>
@@ -55,6 +56,20 @@ export default function CartPage() {
     if (selectedItems.length === 0) return
     if (!window.confirm(`선택한 상품 ${selectedItems.length}개를 삭제할까요?`)) return
     removeItems.mutate(selectedItems.map((item) => item.id))
+  }
+
+  const goCheckout = () => {
+    navigate('/checkout', {
+      state: {
+        items: selectedItems.map((item) => ({
+          productId: item.productId,
+          productName: item.productName,
+          price: item.price,
+          quantity: item.quantity,
+          thumbnailUrl: item.thumbnailUrl,
+        })),
+      },
+    })
   }
 
   return (
@@ -111,10 +126,11 @@ export default function CartPage() {
             </div>
           </dl>
           <button
-            disabled
+            onClick={goCheckout}
+            disabled={selectedItems.length === 0 || isBusy}
             className="mt-6 w-full rounded-lg bg-gray-900 py-3 font-medium text-white disabled:opacity-40"
           >
-            주문하기 (준비 중)
+            {selectedItems.length}종 주문하기
           </button>
         </aside>
       </div>

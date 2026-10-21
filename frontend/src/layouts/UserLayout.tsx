@@ -44,7 +44,10 @@ export default function UserLayout() {
               )}
             </Link>
             {accessToken ? (
-              <button onClick={handleLogout}>로그아웃</button>
+              <>
+                <Link to="/mypage/orders">주문내역</Link>
+                <button onClick={handleLogout}>로그아웃</button>
+              </>
             ) : (
               <>
                 <Link to="/login">로그인</Link>

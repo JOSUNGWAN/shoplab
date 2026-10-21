@@ -70,5 +70,8 @@ export function getErrorMessage(error: unknown): string {
   if (isAxiosError(error)) {
     return error.response?.data?.message ?? '서버에 연결할 수 없습니다.'
   }
+  if (error instanceof Error && error.message) {
+    return error.message
+  }
   return '알 수 없는 오류가 발생했습니다.'
 }

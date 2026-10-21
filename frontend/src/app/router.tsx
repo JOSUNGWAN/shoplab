@@ -7,6 +7,11 @@ import ProductDetailPage from '../pages/ProductDetailPage'
 import ProductListPage from '../pages/ProductListPage'
 import { ProtectedRoute } from '../components/ProtectedRoute'
 import CartPage from '../pages/CartPage'
+import CheckoutPage from '../pages/CheckoutPage'
+import OrderDetailPage from '../pages/OrderDetailPage'
+import OrderListPage from '../pages/OrderListPage'
+import PaymentFailPage from '../pages/PaymentFailPage'
+import PaymentSuccessPage from '../pages/PaymentSuccessPage'
 
 export const router = createBrowserRouter([
   {
@@ -23,6 +28,46 @@ export const router = createBrowserRouter([
         element: (
           <ProtectedRoute>
             <CartPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'checkout',
+        element: (
+          <ProtectedRoute>
+            <CheckoutPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'payments/success',
+        element: (
+          <ProtectedRoute>
+            <PaymentSuccessPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'payments/fail',
+        element: (
+          <ProtectedRoute>
+            <PaymentFailPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'mypage/orders',
+        element: (
+          <ProtectedRoute>
+            <OrderListPage />
+          </ProtectedRoute>
+        ),
+      },
+      {
+        path: 'mypage/orders/:orderNumber',
+        element: (
+          <ProtectedRoute>
+            <OrderDetailPage />
           </ProtectedRoute>
         ),
       },

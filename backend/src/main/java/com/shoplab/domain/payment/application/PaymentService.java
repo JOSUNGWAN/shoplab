@@ -47,6 +47,8 @@ public class PaymentService {
         // ② 토스 승인 (외부 API는 트랜잭션 밖에서)
         TossPaymentResponse toss = tossPaymentsClient.confirm(
                 request.paymentKey(), request.orderId(), request.amount());
+        log.info("토스 결제 승인 완료. orderId={}, paymentKey={}, status={}, method={}, amount={}",
+                toss.orderId(), toss.paymentKey(), toss.status(), toss.method(), toss.totalAmount());
 
         // ③ 결과 반영. 실패하면 토스 결제를 되돌린다 (보상 트랜잭션)
         try {
