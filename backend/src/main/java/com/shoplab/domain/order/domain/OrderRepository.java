@@ -32,4 +32,5 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
                                                  @Param("before") LocalDateTime before,
                                                  Pageable pageable);
 
+    boolean existsByMemberIdAndTimeDealIdAndStatusNot(Long memberId, Long timeDealId, OrderStatus status);
 }

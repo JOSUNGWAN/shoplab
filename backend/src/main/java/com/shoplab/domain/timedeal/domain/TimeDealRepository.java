@@ -2,13 +2,11 @@ package com.shoplab.domain.timedeal.domain;
 
 import jakarta.persistence.LockModeType;
 import jakarta.persistence.QueryHint;
-import org.springframework.data.jpa.repository.JpaRepository;
-import org.springframework.data.jpa.repository.Lock;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.jpa.repository.QueryHints;
+import org.springframework.data.jpa.repository.*;
 import org.springframework.data.repository.query.Param;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 public interface TimeDealRepository extends JpaRepository<TimeDeal, Long> {
@@ -27,9 +25,21 @@ public interface TimeDealRepository extends JpaRepository<TimeDeal, Long> {
     @Query("select t from TimeDeal t where t.id = :id")
     Optional<TimeDeal> findByIdForUpdate(@Param("id") Long id);
 
-    // 3. 조건부 UPDATE: 남아 있을 때만 1 감소, 성공하면 1 반환
-    @Modifying(flushAutomatically = true, clearAutomatically = true)
+    // 3. 조건부 UPDATE (clearAutomatically 제거)
+    @Modifying(flushAutomatically = true)
     @Query("update TimeDeal t set t.remainingQuantity = t.remainingQuantity - 1 "
             + "where t.id = :id and t.remainingQuantity > 0")
     int decreaseIfAvailable(@Param("id") Long id);
+
+    // 취소 시 수량 반환 (총수량을 넘지 않게)
+    @Modifying(flushAutomatically = true)
+    @Query("update TimeDeal t set t.remainingQuantity = t.remainingQuantity + 1 "
+            + "where t.id = :id and t.remainingQuantity < t.totalQuantity")
+    int increaseIfBelowTotal(@Param("id") Long id);
+
+    @EntityGraph(attributePaths = "product")
+    Optional<TimeDeal> findWithProductById(Long id);
+
+    @EntityGraph(attributePaths = "product")
+    List<TimeDeal> findByEndAtAfterOrderByStartAtAsc(LocalDateTime now);
 }

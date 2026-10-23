@@ -9,6 +9,7 @@ import com.shoplab.domain.payment.domain.Payment;
 import com.shoplab.domain.payment.domain.PaymentRepository;
 import com.shoplab.domain.payment.dto.ConfirmPaymentRequest;
 import com.shoplab.domain.product.application.ProductLockManager;
+import com.shoplab.domain.timedeal.application.TimeDealStockService;
 import com.shoplab.global.exception.BusinessException;
 import com.shoplab.global.exception.ErrorCode;
 import com.shoplab.global.infra.toss.TossPaymentResponse;
@@ -31,6 +32,7 @@ public class PaymentService {
     private final ProductLockManager productLockManager;
     private final TossPaymentsClient tossPaymentsClient;
     private final TransactionTemplate transactionTemplate;
+    private final TimeDealStockService timeDealStockService;
 
     /** 결제 승인: ①검증(짧은 트랜잭션) → ②토스 승인(트랜잭션 밖) → ③결과 반영(트랜잭션) */
     public OrderDetailResponse confirm(Long memberId, ConfirmPaymentRequest request) {
@@ -87,6 +89,9 @@ public class PaymentService {
                     .orElseThrow(() -> new BusinessException(ErrorCode.ORDER_NOT_FOUND));
             productLockManager.lock(order.getProductIds());
             order.cancel();
+            if (order.isTimeDealOrder()) {
+                timeDealStockService.release(order.getTimeDeal().getId(), order.getMember().getId());
+            }
             paymentRepository.findByOrderId(order.getId()).ifPresent(Payment::cancel);
             return OrderDetailResponse.from(order);
         });
@@ -109,10 +114,15 @@ public class PaymentService {
             throw new BusinessException(ErrorCode.AMOUNT_MISMATCH);
         }
 
+        // 결제 반영
         order.markPaid();
         LocalDateTime approvedAt = toss.approvedAt() != null ? toss.approvedAt().toLocalDateTime() : LocalDateTime.now();
         paymentRepository.save(Payment.approve(order, toss.paymentKey(), toss.method(), toss.totalAmount(), approvedAt));
-        cartItemRepository.deleteByMemberIdAndProductIds(memberId, order.getProductIds());
+
+        // 타임딜은 장바구니를 거치지 않으므로, 같은 상품을 장바구니에 담아 둔 경우 지우지 않는다
+        if (!order.isTimeDealOrder()) {
+            cartItemRepository.deleteByMemberIdAndProductIds(memberId, order.getProductIds());
+        }
 
         return OrderDetailResponse.from(order);
     }

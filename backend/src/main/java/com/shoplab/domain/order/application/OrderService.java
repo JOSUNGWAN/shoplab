@@ -13,6 +13,7 @@ import com.shoplab.domain.product.application.ProductLockManager;
 import com.shoplab.domain.product.domain.Product;
 import com.shoplab.domain.product.domain.ProductRepository;
 import com.shoplab.domain.product.domain.ProductStatus;
+import com.shoplab.domain.timedeal.application.TimeDealStockService;
 import com.shoplab.global.common.PageResponse;
 import com.shoplab.global.exception.BusinessException;
 import com.shoplab.global.exception.ErrorCode;
@@ -38,6 +39,7 @@ public class OrderService {
     private final ProductRepository productRepository;
     private final MemberRepository memberRepository;
     private final ProductLockManager productLockManager;
+    private final TimeDealStockService timeDealStockService;
 
     @Transactional
     public OrderDetailResponse createOrder(Long memberId, CreateOrderRequest request) {
@@ -87,10 +89,13 @@ public class OrderService {
     public void expireOrder(Long orderId) {
         Order order = orderRepository.findByIdForUpdate(orderId).orElse(null);
         if (order == null || !order.isPaymentExpired(LocalDateTime.now())) {
-            return; // 그사이 결제됐거나 이미 취소된 주문
+            return;
         }
         productLockManager.lock(order.getProductIds());
         order.expire();
+        if (order.isTimeDealOrder()) {
+            timeDealStockService.release(order.getTimeDeal().getId(), order.getMember().getId());
+        }
     }
 
     private Order findMyOrder(Long memberId, String orderNumber) {

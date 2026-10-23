@@ -169,6 +169,9 @@ npm run dev
 | GET    | `/api/orders/{orderNumber}`        | 주문 상세                                           | 필요 |
 | POST   | `/api/orders/{orderNumber}/cancel` | 주문 취소 (결제 환불·재고 복구)                     | 필요 |
 | POST   | `/api/payments/confirm`            | 결제 승인 (토스페이먼츠)                            | 필요 |
+| GET    | `/api/time-deals`                  | 진행 중·예정 타임딜 목록                            | -    |
+| GET    | `/api/time-deals/{id}`             | 타임딜 상세 (남은 수량)                             | -    |
+| POST   | `/api/time-deals/{id}/orders`      | 타임딜 구매 (1인 1개)                               | 필요 |
 
 ## 트러블슈팅
 

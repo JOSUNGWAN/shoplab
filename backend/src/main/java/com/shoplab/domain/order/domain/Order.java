@@ -1,6 +1,7 @@
 package com.shoplab.domain.order.domain;
 
 import com.shoplab.domain.member.domain.Member;
+import com.shoplab.domain.timedeal.domain.TimeDeal;
 import com.shoplab.global.common.BaseTimeEntity;
 import com.shoplab.global.exception.BusinessException;
 import com.shoplab.global.exception.ErrorCode;
@@ -24,6 +25,8 @@ import java.util.UUID;
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @SequenceGenerator(name = "order_seq_gen", sequenceName = "order_seq", allocationSize = 50)
 public class Order extends BaseTimeEntity {
+
+    public static final Duration PAYMENT_TIMEOUT = Duration.ofMinutes(15);
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "order_seq_gen")
@@ -49,10 +52,12 @@ public class Order extends BaseTimeEntity {
     @Column(nullable = false)
     private LocalDateTime orderedAt;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "time_deal_id")
+    private TimeDeal timeDeal;
+
     @OneToMany(mappedBy = "order", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<OrderItem> items = new ArrayList<>();
-
-    public static final Duration PAYMENT_TIMEOUT = Duration.ofMinutes(15);
 
     private Order(Member member, ShippingInfo shippingInfo, List<OrderItem> items) {
         this.orderNumber = generateOrderNumber();
@@ -69,6 +74,17 @@ public class Order extends BaseTimeEntity {
             throw new BusinessException(ErrorCode.INVALID_INPUT);
         }
         return new Order(member, shippingInfo, items);
+    }
+
+    public static Order createTimeDealOrder(Member member, ShippingInfo shippingInfo, TimeDeal timeDeal) {
+        OrderItem item = OrderItem.createWithPrice(timeDeal.getProduct(), 1, timeDeal.getDealPrice());
+        Order order = new Order(member, shippingInfo, List.of(item));
+        order.timeDeal = timeDeal;
+        return order;
+    }
+
+    public boolean isTimeDealOrder() {
+        return timeDeal != null;
     }
 
     private void addItem(OrderItem item) {
@@ -92,7 +108,7 @@ public class Order extends BaseTimeEntity {
             throw new BusinessException(ErrorCode.ORDER_CANNOT_BE_CANCELED);
         }
         changeStatus(OrderStatus.CANCELED);
-        items.forEach(OrderItem::restoreStock);
+        restoreProductStock();
     }
 
     // 예: 20261019-3F9A2C1B
@@ -116,10 +132,17 @@ public class Order extends BaseTimeEntity {
             throw new BusinessException(ErrorCode.INVALID_ORDER_STATUS);
         }
         changeStatus(OrderStatus.CANCELED);
-        items.forEach(OrderItem::restoreStock);
+        restoreProductStock();
     }
 
     public List<Long> getProductIds() {
         return items.stream().map(item -> item.getProduct().getId()).distinct().toList();
+    }
+
+    // 타임딜 주문은 상품 재고가 아니라 타임딜 수량을 썼으므로 상품 재고를 돌려주지 않는다
+    private void restoreProductStock() {
+        if (!isTimeDealOrder()) {
+            items.forEach(OrderItem::restoreStock);
+        }
     }
 }

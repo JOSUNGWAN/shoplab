@@ -1,0 +1,65 @@
+@token = {{login.response.body.$.data.accessToken}}
+@dealId = {{deals.response.body.$.data[0].id}}
+@orderNumber = {{buy.response.body.$.data.orderNumber}}
+
+### 0. 로그인
+# @name login
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{ "email": "test@shoplab.com", "password": "Test1234!" }
+
+### 1. 타임딜 목록 (로그인 불필요) → 진행 중 1개, 예정 1개
+# @name deals
+GET http://localhost:8080/api/time-deals
+
+### 2. 타임딜 상세 → remainingQuantity 5
+GET http://localhost:8080/api/time-deals/{{dealId}}
+
+### 3. 구매 → 201, 주문 금액 49,000원(타임딜 가격), PENDING_PAYMENT
+# @name buy
+POST http://localhost:8080/api/time-deals/{{dealId}}/orders
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "recipient": "홍길동", "phone": "010-1234-5678", "zipcode": "06236", "address1": "서울시" }
+
+### 4. 같은 사람이 또 구매 → 409 TIME_DEAL_ALREADY_PURCHASED
+POST http://localhost:8080/api/time-deals/{{dealId}}/orders
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "recipient": "홍길동", "phone": "010-1234-5678", "zipcode": "06236", "address1": "서울시" }
+
+### 5. 남은 수량 확인 → 4
+GET http://localhost:8080/api/time-deals/{{dealId}}
+
+### 6. 주문 취소 → 수량 반환
+POST http://localhost:8080/api/orders/{{orderNumber}}/cancel
+Authorization: Bearer {{token}}
+
+### 7. 남은 수량 확인 → 다시 5
+GET http://localhost:8080/api/time-deals/{{dealId}}
+
+### 8. 취소 후 다시 구매 → 201 (1인 1개 제한이 풀림)
+# @name buy
+POST http://localhost:8080/api/time-deals/{{dealId}}/orders
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "recipient": "홍길동", "phone": "010-1234-5678", "zipcode": "06236", "address1": "서울시" }
+
+### 9. 아직 오픈 전인 타임딜 → 409 TIME_DEAL_NOT_OPEN
+POST http://localhost:8080/api/time-deals/{{deals.response.body.$.data[1].id}}/orders
+Authorization: Bearer {{token}}
+Content-Type: application/json
+
+{ "recipient": "홍길동", "phone": "010-1234-5678", "zipcode": "06236", "address1": "서울시" }
+
+### 10. 내 주문 목록
+GET http://localhost:8080/api/orders
+Authorization: Bearer {{token}}
+
+### 11. 주문번호를 직접 넣어 취소
+POST http://localhost:8080/api/orders/20261023-AE49D3E1/cancel
+Authorization: Bearer {{token}}

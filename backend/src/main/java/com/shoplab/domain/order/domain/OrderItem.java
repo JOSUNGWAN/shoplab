@@ -35,15 +35,20 @@ public class OrderItem {
     @Column(nullable = false)
     private int quantity;
 
-    private OrderItem(Product product, int quantity) {
+    private OrderItem(Product product, int quantity, int orderPrice) {
         this.product = product;
         this.productName = product.getName();
-        this.orderPrice = product.getPrice();
+        this.orderPrice = orderPrice;
         this.quantity = quantity;
     }
 
     public static OrderItem create(Product product, int quantity) {
-        return new OrderItem(product, quantity);
+        return new OrderItem(product, quantity, product.getPrice());
+    }
+
+    // 타임딜처럼 판매가가 다른 경우
+    public static OrderItem createWithPrice(Product product, int quantity, int orderPrice) {
+        return new OrderItem(product, quantity, orderPrice);
     }
 
     void assignOrder(Order order) {
