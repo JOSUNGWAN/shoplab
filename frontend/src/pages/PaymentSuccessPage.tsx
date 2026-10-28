@@ -20,6 +20,7 @@ export default function PaymentSuccessPage() {
       // 결제가 끝나면 서버가 장바구니를 비웠으니 화면 캐시도 갱신
       queryClient.invalidateQueries({ queryKey: cartKeys.all })
       queryClient.invalidateQueries({ queryKey: ['orders'] })
+      queryClient.invalidateQueries({ queryKey: ['time-deals'] })
     },
   })
 

@@ -18,6 +18,8 @@ export default function UserLayout() {
       logout()
       queryClient.removeQueries({ queryKey: ['me'] })
       queryClient.removeQueries({ queryKey: cartKeys.all })
+      queryClient.removeQueries({ queryKey: ['orders'] })
+      queryClient.removeQueries({ queryKey: ['order'] })
       navigate('/')
     }
   }
@@ -32,6 +34,9 @@ export default function UserLayout() {
             </Link>
             <Link to="/products" className="text-sm text-gray-700 hover:text-gray-900">
               상품
+            </Link>
+            <Link to="/time-deals" className="text-sm font-semibold text-red-600">
+              타임딜
             </Link>
           </div>
           <nav className="flex items-center gap-4 text-sm">

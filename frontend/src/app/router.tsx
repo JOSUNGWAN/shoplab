@@ -12,6 +12,8 @@ import OrderDetailPage from '../pages/OrderDetailPage'
 import OrderListPage from '../pages/OrderListPage'
 import PaymentFailPage from '../pages/PaymentFailPage'
 import PaymentSuccessPage from '../pages/PaymentSuccessPage'
+import TimeDealDetailPage from '../pages/TimeDealDetailPage'
+import TimeDealListPage from '../pages/TimeDealListPage'
 
 export const router = createBrowserRouter([
   {
@@ -23,6 +25,8 @@ export const router = createBrowserRouter([
       { path: 'signup', element: <SignupPage /> },
       { path: 'products', element: <ProductListPage /> },
       { path: 'products/:productId', element: <ProductDetailPage /> },
+      { path: 'time-deals', element: <TimeDealListPage /> },
+      { path: 'time-deals/:timeDealId', element: <TimeDealDetailPage /> },
       {
         path: 'cart',
         element: (

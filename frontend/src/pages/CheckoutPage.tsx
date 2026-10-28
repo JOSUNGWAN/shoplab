@@ -9,6 +9,7 @@ import { cancelOrder, createOrder } from '../features/order/api'
 import { shippingSchema, type ShippingForm } from '../features/order/schemas'
 import type { CheckoutItem } from '../features/order/types'
 import { formatPrice } from '../lib/format'
+import { purchaseTimeDeal } from '../features/timedeal/api'
 
 type TossWidgets = ReturnType<Awaited<ReturnType<typeof loadTossPayments>>['widgets']>
 
@@ -22,7 +23,9 @@ function makeOrderName(items: CheckoutItem[]) {
 
 export default function CheckoutPage() {
   const location = useLocation()
-  const items = (location.state as { items?: CheckoutItem[] } | null)?.items ?? []
+  const state = location.state as { items?: CheckoutItem[]; timeDealId?: number } | null
+  const items = state?.items ?? []
+  const timeDealId = state?.timeDealId
   const expectedAmount = items.reduce((sum, item) => sum + item.price * item.quantity, 0)
 
   const widgetsRef = useRef<TossWidgets | null>(null)
@@ -72,15 +75,20 @@ export default function CheckoutPage() {
     let orderNumber: string | null = null
 
     try {
-      // ① 주문 생성 (재고 차감, 금액은 서버가 계산)
-      const order = await createOrder({
-        items: items.map(({ productId, quantity }) => ({ productId, quantity })),
+      // ① 주문 생성 (일반 주문 / 타임딜 주문)
+      const shipping = {
         recipient: form.recipient,
         phone: form.phone,
         zipcode: form.zipcode,
         address1: form.address1,
         address2: form.address2 || undefined,
-      })
+      }
+      const order = timeDealId
+        ? await purchaseTimeDeal(timeDealId, shipping)
+        : await createOrder({
+            items: items.map(({ productId, quantity }) => ({ productId, quantity })),
+            ...shipping,
+          })
       orderNumber = order.orderNumber
 
       // ② 서버가 계산한 금액을 기준으로 결제
@@ -105,7 +113,10 @@ export default function CheckoutPage() {
 
   return (
     <form onSubmit={(e) => handleSubmit(onPay)(e)} className="py-10" noValidate>
-      <h1 className="mb-6 text-2xl font-bold">주문서</h1>
+      <h1 className="mb-6 text-2xl font-bold">
+        주문서
+        {timeDealId && <span className="ml-2 align-middle text-sm font-semibold text-red-600">타임딜</span>}
+      </h1>
 
       <div className="flex flex-col gap-8 md:flex-row">
         <div className="flex-1 space-y-10">

@@ -1,7 +1,33 @@
 import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router'
 import { getMe } from '../features/auth/api'
+import { getTimeDeals } from '../features/timedeal/api'
+import { TimeDealCard } from '../features/timedeal/components/TimeDealCard'
 import { useAuthStore } from '../stores/authStore'
+
+// 메인 화면 상단 타임딜 영역
+function TimeDealSection() {
+  const { data: deals } = useQuery({ queryKey: ['time-deals'], queryFn: getTimeDeals })
+  if (!deals || deals.length === 0) return null
+
+  return (
+    <section className="py-10">
+      <div className="mb-6 flex items-end justify-between">
+        <h2 className="text-xl font-bold">
+          <span className="text-red-600">타임딜</span> 한정 수량 특가
+        </h2>
+        <Link to="/time-deals" className="text-sm text-gray-500 hover:underline">
+          전체 보기
+        </Link>
+      </div>
+      <div className="grid grid-cols-2 gap-x-5 gap-y-8 md:grid-cols-4">
+        {deals.slice(0, 4).map((deal) => (
+          <TimeDealCard key={deal.id} deal={deal} />
+        ))}
+      </div>
+    </section>
+  )
+}
 
 export default function HomePage() {
   const accessToken = useAuthStore((state) => state.accessToken)
@@ -14,23 +40,40 @@ export default function HomePage() {
 
   if (!accessToken) {
     return (
-      <div className="py-16 text-center">
-        <h1 className="mb-4 text-2xl font-bold">ShopLab에 오신 것을 환영합니다</h1>
-        <Link to="/login" className="text-gray-900 underline">로그인하러 가기</Link>
-      </div>
+      <>
+        <TimeDealSection />
+        <div className="py-16 text-center">
+          <h1 className="mb-4 text-2xl font-bold">ShopLab에 오신 것을 환영합니다</h1>
+          <Link to="/login" className="text-gray-900 underline">
+            로그인하러 가기
+          </Link>
+        </div>
+      </>
     )
   }
 
   if (isLoading) return <p className="py-16 text-center">불러오는 중...</p>
 
   return (
-    <div className="mx-auto max-w-sm py-16">
-      <h1 className="mb-6 text-2xl font-bold">{me?.name}님, 반갑습니다</h1>
-      <dl className="space-y-2 rounded-lg border border-gray-200 p-4 text-sm">
-        <div className="flex justify-between"><dt className="text-gray-500">이메일</dt><dd>{me?.email}</dd></div>
-        <div className="flex justify-between"><dt className="text-gray-500">휴대폰</dt><dd>{me?.phone ?? '-'}</dd></div>
-        <div className="flex justify-between"><dt className="text-gray-500">권한</dt><dd>{me?.role}</dd></div>
-      </dl>
-    </div>
+    <>
+      <TimeDealSection />
+      <div className="mx-auto max-w-sm py-16">
+        <h1 className="mb-6 text-2xl font-bold">{me?.name}님, 반갑습니다</h1>
+        <dl className="space-y-2 rounded-lg border border-gray-200 p-4 text-sm">
+          <div className="flex justify-between">
+            <dt className="text-gray-500">이메일</dt>
+            <dd>{me?.email}</dd>
+          </div>
+          <div className="flex justify-between">
+            <dt className="text-gray-500">휴대폰</dt>
+            <dd>{me?.phone ?? '-'}</dd>
+          </div>
+          <div className="flex justify-between">
+            <dt className="text-gray-500">권한</dt>
+            <dd>{me?.role}</dd>
+          </div>
+        </dl>
+      </div>
+    </>
   )
 }
