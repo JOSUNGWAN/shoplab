@@ -122,6 +122,14 @@ public class Order extends BaseTimeEntity {
         changeStatus(OrderStatus.PAID);
     }
 
+    /** 관리자: 배송 단계 진행 (결제 완료 → 배송 준비 → 배송 중 → 배송 완료) */
+    public void progressByAdmin(OrderStatus next) {
+        if (!next.isAdminProgressTarget()) {
+            throw new BusinessException(ErrorCode.INVALID_ORDER_STATUS);
+        }
+        changeStatus(next);   // 순서 규칙(canTransitionTo)은 기존 그대로 적용
+    }
+
     public boolean isPaymentExpired(LocalDateTime now) {
         return status == OrderStatus.PENDING_PAYMENT && orderedAt.plus(PAYMENT_TIMEOUT).isBefore(now);
     }

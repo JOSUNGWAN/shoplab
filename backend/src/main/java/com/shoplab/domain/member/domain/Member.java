@@ -44,4 +44,8 @@ public class Member extends BaseTimeEntity {
     public static Member create(String email, String encodedPassword, String name, String phone) {
         return new Member(email, encodedPassword, name, phone, Role.USER);
     }
+
+    public static Member createAdmin(String email, String encodedPassword, String name) {
+        return new Member(email, encodedPassword, name, null, Role.ADMIN);
+    }
 }

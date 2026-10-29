@@ -1,0 +1,102 @@
+@adminToken = {{adminLogin.response.body.$.data.accessToken}}
+@userToken = {{userLogin.response.body.$.data.accessToken}}
+@firstOrder = {{search.response.body.$.data.content[0].orderNumber}}
+
+### 0-1. 관리자 로그인
+# @name adminLogin
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{ "email": "admin@shoplab.com", "password": "Admin1234!" }
+
+### 0-2. 일반 회원 로그인
+# @name userLogin
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{ "email": "test@shoplab.com", "password": "Test1234!" }
+
+### 1. 일반 회원으로 관리자 API → 403 FORBIDDEN
+GET http://localhost:8080/api/admin/orders
+Authorization: Bearer {{userToken}}
+
+### 2. 전체 주문 검색 (최근 30일, 20건)
+# @name search
+GET http://localhost:8080/api/admin/orders
+Authorization: Bearer {{adminToken}}
+
+### 3. 결제 완료 주문만
+GET http://localhost:8080/api/admin/orders?status=PAID
+Authorization: Bearer {{adminToken}}
+
+### 4. 기간 + 검색어 (회원 이메일 일부)
+GET http://localhost:8080/api/admin/orders?from=2026-10-01&to=2026-10-31&keyword=test
+Authorization: Bearer {{adminToken}}
+
+### 5. 시작일 > 종료일 → 400
+GET http://localhost:8080/api/admin/orders?from=2026-10-31&to=2026-10-01
+Authorization: Bearer {{adminToken}}
+
+### 6. 주문 상세 (다른 회원 주문도 조회 가능)
+GET http://localhost:8080/api/admin/orders/{{firstOrder}}
+Authorization: Bearer {{adminToken}}
+
+### 7. 일괄 변경: 결제 완료 → 배송 준비 (3번 응답의 PAID 주문번호 + 일부러 실패할 번호)
+PATCH http://localhost:8080/api/admin/orders/status
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "orderNumbers": ["20261029-B21A6E1B"],
+  "status": "PREPARING"
+}
+
+### 8. 같은 주문을 다시 배송 준비로 → 실패 목록에 "현재 주문 상태에서는 처리할 수 없습니다."
+PATCH http://localhost:8080/api/admin/orders/status
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "orderNumbers": ["20261029-B21A6E1B"],
+  "status": "PREPARING"
+}
+
+### 9. 관리자가 취소 상태로 → 400 INVALID_ORDER_STATUS
+PATCH http://localhost:8080/api/admin/orders/status
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "orderNumbers": ["20261029-B21A6E1B"],
+  "status": "CANCELED"
+}
+
+### 10. 배송 준비 → 배송 중
+PATCH http://localhost:8080/api/admin/orders/status
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "orderNumbers": ["20261029-B21A6E1B"],
+  "status": "SHIPPING"
+}
+
+### 11. 배송 중 → 배송 완료
+PATCH http://localhost:8080/api/admin/orders/status
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "orderNumbers": ["20261029-B21A6E1B"],
+  "status": "DELIVERED"
+}
+
+### 12. 배송 완료 → 다시 배송 중 (되돌리기) → 실패 목록에 들어감
+PATCH http://localhost:8080/api/admin/orders/status
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "orderNumbers": ["20261029-B21A6E1B"],
+  "status": "SHIPPING"
+}

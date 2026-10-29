@@ -11,7 +11,7 @@ import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
 
-public interface OrderRepository extends JpaRepository<Order, Long> {
+public interface OrderRepository extends JpaRepository<Order, Long>, OrderRepositoryCustom {
 
     // 목록: 페이징이 있으므로 items를 fetch join하지 않는다 (batch fetch로 해결)
     Page<Order> findByMemberIdOrderByOrderedAtDesc(Long memberId, Pageable pageable);
@@ -33,4 +33,14 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
                                                  Pageable pageable);
 
     boolean existsByMemberIdAndTimeDealIdAndStatusNot(Long memberId, Long timeDealId, OrderStatus status);
+
+    // 관리자 상세: 회원 구분 없이 주문번호로
+    @EntityGraph(attributePaths = {"items", "member"})
+    Optional<Order> findWithItemsAndMemberByOrderNumber(String orderNumber);
+
+    // 관리자 상태 변경용: 주문 행 잠금
+    @Lock(LockModeType.PESSIMISTIC_WRITE)
+    @QueryHints(@QueryHint(name = "jakarta.persistence.lock.timeout", value = "3000"))
+    @Query("select o from Order o where o.orderNumber = :orderNumber")
+    Optional<Order> findByOrderNumberForUpdate(@Param("orderNumber") String orderNumber);
 }

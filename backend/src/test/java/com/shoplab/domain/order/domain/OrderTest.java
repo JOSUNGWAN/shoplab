@@ -123,4 +123,30 @@ class OrderTest {
         paid.markPaid();
         assertThatThrownBy(paid::expire).isInstanceOf(BusinessException.class);
     }
+
+    @Test
+    @DisplayName("관리자는 결제 완료 주문을 배송 준비 → 배송 중 → 배송 완료로 진행시킬 수 있다")
+    void progressByAdmin() {
+        Order order = orderOf(Product.create(category, "티셔츠", "설명", 19000, 10, null), 1);
+        order.markPaid();
+
+        order.progressByAdmin(OrderStatus.PREPARING);
+        order.progressByAdmin(OrderStatus.SHIPPING);
+        order.progressByAdmin(OrderStatus.DELIVERED);
+
+        assertThat(order.getStatus()).isEqualTo(OrderStatus.DELIVERED);
+    }
+
+    @Test
+    @DisplayName("관리자는 단계를 건너뛰거나 취소 상태로 바꿀 수 없다")
+    void progressByAdminInvalid() {
+        Order order = orderOf(Product.create(category, "티셔츠", "설명", 19000, 10, null), 1);
+        order.markPaid();
+
+        assertThatThrownBy(() -> order.progressByAdmin(OrderStatus.SHIPPING))     // 배송 준비 건너뛰기
+                .isInstanceOf(BusinessException.class);
+        assertThatThrownBy(() -> order.progressByAdmin(OrderStatus.CANCELED))     // 관리자 취소는 별도 기능
+                .isInstanceOf(BusinessException.class);
+        assertThat(order.getStatus()).isEqualTo(OrderStatus.PAID);
+    }
 }

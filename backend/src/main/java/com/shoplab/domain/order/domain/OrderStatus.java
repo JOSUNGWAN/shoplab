@@ -17,4 +17,9 @@ public enum OrderStatus {
     public boolean isCancelableByMember() {
         return this == PENDING_PAYMENT || this == PAID;
     }
+
+    // 관리자가 진행시킬 수 있는 배송 단계
+    public boolean isAdminProgressTarget() {
+        return this == PREPARING || this == SHIPPING || this == DELIVERED;
+    }
 }
