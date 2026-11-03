@@ -1,4 +1,4 @@
-import { createBrowserRouter } from 'react-router'
+import { createBrowserRouter, Navigate } from 'react-router'
 import UserLayout from '../layouts/UserLayout'
 import HomePage from '../pages/HomePage'
 import LoginPage from '../pages/LoginPage'
@@ -14,6 +14,9 @@ import PaymentFailPage from '../pages/PaymentFailPage'
 import PaymentSuccessPage from '../pages/PaymentSuccessPage'
 import TimeDealDetailPage from '../pages/TimeDealDetailPage'
 import TimeDealListPage from '../pages/TimeDealListPage'
+import AdminRoute from '../components/AdminRoute'
+import AdminLayout from '../layouts/AdminLayout'
+import AdminOrdersPage from '../pages/admin/AdminOrdersPage'
 
 export const router = createBrowserRouter([
   {
@@ -74,6 +77,19 @@ export const router = createBrowserRouter([
             <OrderDetailPage />
           </ProtectedRoute>
         ),
+      },
+    ],
+  },
+  {
+    path: '/admin',
+    element: <AdminRoute />,
+    children: [
+      {
+        element: <AdminLayout />,
+        children: [
+          { index: true, element: <Navigate to="orders" replace /> },
+          { path: 'orders', element: <AdminOrdersPage /> },
+        ],
       },
     ],
   },

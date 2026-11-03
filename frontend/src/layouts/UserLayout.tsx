@@ -3,6 +3,7 @@ import { Link, Outlet, useNavigate } from 'react-router'
 import { useAuthStore } from '../stores/authStore'
 import { logout as logoutApi } from '../features/auth/api'
 import { cartKeys, useCartCount } from '../features/cart/hooks'
+import { getTokenRole } from '../lib/token'
 
 export default function UserLayout() {
   const accessToken = useAuthStore((state) => state.accessToken)
@@ -10,6 +11,7 @@ export default function UserLayout() {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
   const { data: cartCount } = useCartCount()
+  const isAdmin = getTokenRole(accessToken) === 'ADMIN'
 
   const handleLogout = async () => {
     try {
@@ -20,6 +22,7 @@ export default function UserLayout() {
       queryClient.removeQueries({ queryKey: cartKeys.all })
       queryClient.removeQueries({ queryKey: ['orders'] })
       queryClient.removeQueries({ queryKey: ['order'] })
+      queryClient.removeQueries({ queryKey: ['admin'] })
       navigate('/')
     }
   }
@@ -50,6 +53,11 @@ export default function UserLayout() {
             </Link>
             {accessToken ? (
               <>
+                {isAdmin && (
+                  <Link to="/admin" className="rounded bg-gray-900 px-2 py-1 text-xs font-semibold text-white">
+                    관리자
+                  </Link>
+                )}
                 <Link to="/mypage/orders">주문내역</Link>
                 <button onClick={handleLogout}>로그아웃</button>
               </>

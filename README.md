@@ -196,3 +196,13 @@ npm run dev
 
 - **원인**: Spring Boot 4의 모듈 분리로 RestClient 자동 설정이 별도 스타터로 분리됨
 - **해결**: `spring-boot-starter-restclient` 의존성 추가
+
+### TanStack Table 설치 시 `useReactTable`을 찾을 수 없음
+
+- 원인: 버전 없이 설치해 최신 메이저 버전이 설치됨 (API 변경)
+- 해결: `npm install @tanstack/react-table@8`로 메이저 버전을 고정하고 package-lock.json 커밋
+
+### 검색할 때마다 검색 폼이 하나씩 늘어남
+
+- 원인: 형제 컴포넌트(검색 폼, 그리드)에 같은 `key`를 지정해 React가 이전 컴포넌트를 구분하지 못함
+- 해결: `form-${viewKey}`, `table-${viewKey}`처럼 형제끼리 서로 다른 key 사용
