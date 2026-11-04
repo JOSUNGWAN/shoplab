@@ -1,0 +1,126 @@
+@adminToken = {{adminLogin.response.body.$.data.accessToken}}
+@productId = {{create.response.body.$.data.id}}
+
+### 0. 관리자 로그인
+# @name adminLogin
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{ "email": "admin@shoplab.com", "password": "Admin1234!" }
+
+### 1. 상품 검색 (전체, 최신 등록순)
+GET http://localhost:8080/api/admin/products
+Authorization: Bearer {{adminToken}}
+
+### 2. 품절 상품만
+GET http://localhost:8080/api/admin/products?status=SOLD_OUT
+Authorization: Bearer {{adminToken}}
+
+### 3. 이름 검색
+GET http://localhost:8080/api/admin/products?keyword=키보드
+Authorization: Bearer {{adminToken}}
+
+### 4. 등록 검증 실패 → 400 (가격 50원, 이름 없음, 이미지 주소 이상)
+POST http://localhost:8080/api/admin/products
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "categoryId": 1,
+  "name": "",
+  "price": 50,
+  "stockQuantity": 10,
+  "thumbnailUrl": "not-a-url"
+}
+
+### 5. 없는 카테고리 → 404 CATEGORY_NOT_FOUND
+POST http://localhost:8080/api/admin/products
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "categoryId": 9999,
+  "name": "테스트 상품",
+  "price": 10000,
+  "stockQuantity": 10
+}
+
+### 6. 상품 등록 → 201
+# @name create
+POST http://localhost:8080/api/admin/products
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "categoryId": 1,
+  "name": "관리자 등록 테스트 머그컵",
+  "description": "관리자 API로 등록한 상품입니다.",
+  "price": 12000,
+  "stockQuantity": 5,
+  "thumbnailUrl": "https://picsum.photos/seed/mug/400/400"
+}
+
+### 7. 상세
+GET http://localhost:8080/api/admin/products/{{productId}}
+Authorization: Bearer {{adminToken}}
+
+### 8. 정보 수정 (가격 12,000 → 15,000)
+PUT http://localhost:8080/api/admin/products/{{productId}}
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{
+  "categoryId": 1,
+  "name": "관리자 등록 테스트 머그컵",
+  "description": "가격을 수정했습니다.",
+  "price": 15000,
+  "thumbnailUrl": "https://picsum.photos/seed/mug/400/400"
+}
+
+### 9. 재고 전부 차감 (-5) → 0개, SOLD_OUT
+PATCH http://localhost:8080/api/admin/products/{{productId}}/stock
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{ "delta": -5 }
+
+### 10. 재고보다 많이 차감 → 400 INVALID_STOCK_ADJUSTMENT
+PATCH http://localhost:8080/api/admin/products/{{productId}}/stock
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{ "delta": -1 }
+
+### 11. 입고 (+20) → 20개, ON_SALE
+PATCH http://localhost:8080/api/admin/products/{{productId}}/stock
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{ "delta": 20 }
+
+### 12. 숨김 → HIDDEN
+PATCH http://localhost:8080/api/admin/products/{{productId}}/visibility
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{ "visible": false }
+
+### 13. 사용자 API로 숨긴 상품 조회 → 404 (토큰 없이)
+GET http://localhost:8080/api/products/{{productId}}
+
+### 14. 숨긴 상태에서 입고 (+5) → 25개, HIDDEN 유지
+PATCH http://localhost:8080/api/admin/products/{{productId}}/stock
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{ "delta": 5 }
+
+### 15. 다시 보이기 → ON_SALE
+PATCH http://localhost:8080/api/admin/products/{{productId}}/visibility
+Authorization: Bearer {{adminToken}}
+Content-Type: application/json
+
+{ "visible": true }
+
+### 16. 사용자 API로 다시 조회 → 200
+GET http://localhost:8080/api/products/{{productId}}

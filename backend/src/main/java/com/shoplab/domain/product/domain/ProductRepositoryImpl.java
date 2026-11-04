@@ -42,6 +42,32 @@ public class ProductRepositoryImpl implements ProductRepositoryCustom {
         return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
     }
 
+    @Override
+    public Page<Product> searchForAdmin(AdminProductSearchCondition condition, Pageable pageable) {
+        // 사용자 검색과 같은 조건 메서드를 재사용. 상태 조건이 없으면 숨김 상품까지 모두 조회
+        Predicate[] where = {
+                nameContains(condition.keyword()),
+                categoryIn(condition.categoryId() == null ? null : List.of(condition.categoryId())),
+                statusIn(condition.status() == null ? null : List.of(condition.status()))
+        };
+
+        List<Product> content = queryFactory
+                .selectFrom(product)
+                .join(product.category, category).fetchJoin()
+                .where(where)
+                .orderBy(product.id.desc())
+                .offset(pageable.getOffset())
+                .limit(pageable.getPageSize())
+                .fetch();
+
+        JPAQuery<Long> countQuery = queryFactory
+                .select(product.count())
+                .from(product)
+                .where(where);
+
+        return PageableExecutionUtils.getPage(content, pageable, countQuery::fetchOne);
+    }
+
     private Predicate[] conditions(ProductSearchCondition c) {
         return new Predicate[]{
                 statusIn(c.statuses()),

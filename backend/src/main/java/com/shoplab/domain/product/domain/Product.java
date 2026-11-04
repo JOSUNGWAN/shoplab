@@ -62,19 +62,57 @@ public class Product extends BaseTimeEntity {
     }
 
     public void decreaseStock(int quantity) {
-        if (quantity > this.stockQuantity) {
+        if (this.stockQuantity < quantity) {
             throw new BusinessException(ErrorCode.OUT_OF_STOCK);
         }
         this.stockQuantity -= quantity;
-        if (this.stockQuantity == 0) {
-            this.status = ProductStatus.SOLD_OUT;
-        }
+        syncStatusWithStock();
     }
 
     public void increaseStock(int quantity) {
         this.stockQuantity += quantity;
-        if (this.status == ProductStatus.SOLD_OUT && this.stockQuantity > 0) {
-            this.status = ProductStatus.ON_SALE;
+        syncStatusWithStock();
+    }
+
+    /** 관리자: 상품 정보 수정 (재고·상태는 별도 메서드로만 변경) */
+    public void update(Category category, String name, String description, int price, String thumbnailUrl) {
+        this.category = category;
+        this.name = name;
+        this.description = description;
+        this.price = price;
+        this.thumbnailUrl = thumbnailUrl;
+    }
+
+    /** 관리자: 재고 입고(+) / 차감(-) */
+    public void adjustStock(int delta) {
+        if (delta == 0) {
+            throw new BusinessException(ErrorCode.INVALID_INPUT, "변경할 수량을 입력해 주세요.");
         }
+        if (this.stockQuantity + delta < 0) {
+            throw new BusinessException(ErrorCode.INVALID_STOCK_ADJUSTMENT);
+        }
+        this.stockQuantity += delta;
+        syncStatusWithStock();
+    }
+
+    /** 관리자: 숨김 (판매 중·품절 모두 숨길 수 있음) */
+    public void hide() {
+        this.status = ProductStatus.HIDDEN;
+    }
+
+    /** 관리자: 다시 보이기 (재고에 따라 판매 중 또는 품절) */
+    public void show() {
+        if (this.status != ProductStatus.HIDDEN) {
+            return;
+        }
+        this.status = this.stockQuantity > 0 ? ProductStatus.ON_SALE : ProductStatus.SOLD_OUT;
+    }
+
+    /** 재고에 맞춰 판매 중/품절 결정. 숨긴 상품은 관리자가 직접 보이기 전까지 숨김 유지 */
+    private void syncStatusWithStock() {
+        if (this.status == ProductStatus.HIDDEN) {
+            return;
+        }
+        this.status = this.stockQuantity > 0 ? ProductStatus.ON_SALE : ProductStatus.SOLD_OUT;
     }
 }

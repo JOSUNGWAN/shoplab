@@ -147,34 +147,40 @@ npm run dev
 
 ## API
 
-| Method | URL                                | 설명                                                | 인증   |
-| ------ | ---------------------------------- | --------------------------------------------------- | ------ |
-| GET    | `/api/health`                      | 서버 상태 확인                                      | -      |
-| POST   | `/api/auth/signup`                 | 회원가입                                            | -      |
-| POST   | `/api/auth/login`                  | 로그인 (Access Token 발급, Refresh Token 쿠키)      | -      |
-| POST   | `/api/auth/reissue`                | 토큰 재발급 (Refresh Token 교체)                    | 쿠키   |
-| POST   | `/api/auth/logout`                 | 로그아웃 (Refresh Token 삭제)                       | 쿠키   |
-| GET    | `/api/members/me`                  | 내 정보 조회                                        | 필요   |
-| GET    | `/api/categories`                  | 카테고리 트리                                       | -      |
-| GET    | `/api/products`                    | 상품 목록 (카테고리·검색어·가격 필터, 정렬, 페이지) | -      |
-| GET    | `/api/products/{id}`               | 상품 상세                                           | -      |
-| GET    | `/api/cart`                        | 장바구니 목록·합계                                  | 필요   |
-| GET    | `/api/cart/count`                  | 장바구니 상품 종류 수                               | 필요   |
-| POST   | `/api/cart/items`                  | 장바구니 담기 (같은 상품은 수량 합치기)             | 필요   |
-| PATCH  | `/api/cart/items/{id}`             | 수량 변경                                           | 필요   |
-| DELETE | `/api/cart/items/{id}`             | 장바구니 상품 삭제                                  | 필요   |
-| DELETE | `/api/cart/items?ids=1,2`          | 선택 삭제                                           | 필요   |
-| POST   | `/api/orders`                      | 주문 생성 (재고 차감)                               | 필요   |
-| GET    | `/api/orders?page=0`               | 내 주문 목록                                        | 필요   |
-| GET    | `/api/orders/{orderNumber}`        | 주문 상세                                           | 필요   |
-| POST   | `/api/orders/{orderNumber}/cancel` | 주문 취소 (결제 환불·재고 복구)                     | 필요   |
-| POST   | `/api/payments/confirm`            | 결제 승인 (토스페이먼츠)                            | 필요   |
-| GET    | `/api/time-deals`                  | 진행 중·예정 타임딜 목록                            | -      |
-| GET    | `/api/time-deals/{id}`             | 타임딜 상세 (남은 수량)                             | -      |
-| POST   | `/api/time-deals/{id}/orders`      | 타임딜 구매 (1인 1개)                               | 필요   |
-| GET    | `/api/admin/orders`                | 관리자 주문 검색 (상태·기간·검색어)                 | 관리자 |
-| GET    | `/api/admin/orders/{orderNumber}`  | 관리자 주문 상세                                    | 관리자 |
-| PATCH  | `/api/admin/orders/status`         | 주문 상태 일괄 변경                                 | 관리자 |
+| Method | URL                                   | 설명                                                | 인증   |
+| ------ | ------------------------------------- | --------------------------------------------------- | ------ |
+| GET    | `/api/health`                         | 서버 상태 확인                                      | -      |
+| POST   | `/api/auth/signup`                    | 회원가입                                            | -      |
+| POST   | `/api/auth/login`                     | 로그인 (Access Token 발급, Refresh Token 쿠키)      | -      |
+| POST   | `/api/auth/reissue`                   | 토큰 재발급 (Refresh Token 교체)                    | 쿠키   |
+| POST   | `/api/auth/logout`                    | 로그아웃 (Refresh Token 삭제)                       | 쿠키   |
+| GET    | `/api/members/me`                     | 내 정보 조회                                        | 필요   |
+| GET    | `/api/categories`                     | 카테고리 트리                                       | -      |
+| GET    | `/api/products`                       | 상품 목록 (카테고리·검색어·가격 필터, 정렬, 페이지) | -      |
+| GET    | `/api/products/{id}`                  | 상품 상세                                           | -      |
+| GET    | `/api/cart`                           | 장바구니 목록·합계                                  | 필요   |
+| GET    | `/api/cart/count`                     | 장바구니 상품 종류 수                               | 필요   |
+| POST   | `/api/cart/items`                     | 장바구니 담기 (같은 상품은 수량 합치기)             | 필요   |
+| PATCH  | `/api/cart/items/{id}`                | 수량 변경                                           | 필요   |
+| DELETE | `/api/cart/items/{id}`                | 장바구니 상품 삭제                                  | 필요   |
+| DELETE | `/api/cart/items?ids=1,2`             | 선택 삭제                                           | 필요   |
+| POST   | `/api/orders`                         | 주문 생성 (재고 차감)                               | 필요   |
+| GET    | `/api/orders?page=0`                  | 내 주문 목록                                        | 필요   |
+| GET    | `/api/orders/{orderNumber}`           | 주문 상세                                           | 필요   |
+| POST   | `/api/orders/{orderNumber}/cancel`    | 주문 취소 (결제 환불·재고 복구)                     | 필요   |
+| POST   | `/api/payments/confirm`               | 결제 승인 (토스페이먼츠)                            | 필요   |
+| GET    | `/api/time-deals`                     | 진행 중·예정 타임딜 목록                            | -      |
+| GET    | `/api/time-deals/{id}`                | 타임딜 상세 (남은 수량)                             | -      |
+| POST   | `/api/time-deals/{id}/orders`         | 타임딜 구매 (1인 1개)                               | 필요   |
+| GET    | `/api/admin/orders`                   | 관리자 주문 검색 (상태·기간·검색어)                 | 관리자 |
+| GET    | `/api/admin/orders/{orderNumber}`     | 관리자 주문 상세                                    | 관리자 |
+| PATCH  | `/api/admin/orders/status`            | 주문 상태 일괄 변경                                 | 관리자 |
+| GET    | `/api/admin/products`                 | 관리자 상품 검색 (숨김 포함)                        | 관리자 |
+| GET    | `/api/admin/products/{id}`            | 관리자 상품 상세                                    | 관리자 |
+| POST   | `/api/admin/products`                 | 상품 등록                                           | 관리자 |
+| PUT    | `/api/admin/products/{id}`            | 상품 정보 수정                                      | 관리자 |
+| PATCH  | `/api/admin/products/{id}/stock`      | 재고 입고·차감                                      | 관리자 |
+| PATCH  | `/api/admin/products/{id}/visibility` | 상품 숨김 / 다시 보이기                             | 관리자 |
 
 ## 트러블슈팅
 

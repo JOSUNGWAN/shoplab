@@ -33,7 +33,9 @@ public enum ErrorCode {
     TIME_DEAL_NOT_FOUND(HttpStatus.NOT_FOUND, "타임딜을 찾을 수 없습니다."),
     TIME_DEAL_SOLD_OUT(HttpStatus.CONFLICT, "타임딜 상품이 모두 판매되었습니다."),
     TIME_DEAL_NOT_OPEN(HttpStatus.CONFLICT, "타임딜 진행 시간이 아닙니다."),
-    TIME_DEAL_ALREADY_PURCHASED(HttpStatus.CONFLICT, "타임딜 상품은 1인 1개만 구매할 수 있습니다.");
+    TIME_DEAL_ALREADY_PURCHASED(HttpStatus.CONFLICT, "타임딜 상품은 1인 1개만 구매할 수 있습니다."),
+    CATEGORY_NOT_FOUND(HttpStatus.NOT_FOUND, "카테고리를 찾을 수 없습니다."),
+    INVALID_STOCK_ADJUSTMENT(HttpStatus.BAD_REQUEST, "재고는 0개보다 적어질 수 없습니다.");
 
     private final HttpStatus status;
     private final String message;

@@ -6,4 +6,6 @@ import org.springframework.data.domain.Pageable;
 public interface ProductRepositoryCustom {
 
     Page<Product> search(ProductSearchCondition condition, Pageable pageable);
+
+    Page<Product> searchForAdmin(AdminProductSearchCondition condition, Pageable pageable);
 }
