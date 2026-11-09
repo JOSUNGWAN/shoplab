@@ -15,6 +15,9 @@ export default function AdminLayout() {
             <NavLink to="/admin/orders" className={navClass}>
               주문 관리
             </NavLink>
+            <NavLink to="/admin/products" className={navClass}>
+              상품 관리
+            </NavLink>
           </nav>
           <Link to="/" className="ml-auto text-sm text-gray-400 hover:text-white">
             쇼핑몰로 이동 →

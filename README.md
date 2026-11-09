@@ -16,19 +16,19 @@ Spring Boot와 React로 만드는 쇼핑몰 포트폴리오 프로젝트입니�
 - [x] 장바구니
 - [x] 주문·결제 (비관적 락 재고 차감, 토스페이먼츠 결제·환불, 미결제 주문 자동 취소)
 - [x] 타임딜 (Redis Lua 선차감 + DB 조건부 UPDATE, 1인 1개, 카운트다운 화면)
-- [ ] 관리자 페이지
+- [ ] 관리자 페이지 (주문 관리·상품 관리 완료, 매출 대시보드 진행 예정)
 - [ ] 배포 (AWS, CI/CD)
 
 ## 기술 스택
 
-| 구분     | 기술                                                                                                   |
-| -------- | ------------------------------------------------------------------------------------------------------ |
-| Backend  | Java 21, Spring Boot 4.1, Spring Data JPA, QueryDSL, Spring Security, JWT (jjwt), RestClient           |
-| Frontend | React 19, TypeScript, Vite, React Router, TanStack Query, Zustand, React Hook Form + Zod, Tailwind CSS |
-| Database | Oracle 21c XE, Redis 7                                                                                 |
-| Payment  | 토스페이먼츠 결제위젯(주문서형) v2                                                                     |
-| Infra    | Docker, Docker Compose                                                                                 |
-| Test     | JUnit 5, Mockito                                                                                       |
+| 구분     | 기술                                                                                                                   |
+| -------- | ---------------------------------------------------------------------------------------------------------------------- |
+| Backend  | Java 21, Spring Boot 4.1, Spring Data JPA, QueryDSL, Spring Security, JWT (jjwt), RestClient                           |
+| Frontend | React 19, TypeScript, Vite, React Router, TanStack Query, TanStack Table, Zustand, React Hook Form + Zod, Tailwind CSS |
+| Database | Oracle 21c XE, Redis 7                                                                                                 |
+| Payment  | 토스페이먼츠 결제위젯(주문서형) v2                                                                                     |
+| Infra    | Docker, Docker Compose                                                                                                 |
+| Test     | JUnit 5, Mockito                                                                                                       |
 
 ## 프로젝트 구조
 
@@ -106,6 +106,15 @@ npm run dev
 
 `http://localhost:5173`에서 실행됩니다. `/api` 요청은 Vite 프록시를 통해 백엔드로 전달됩니다.
 
+### 관리자 계정
+
+`local` 프로필로 실행하면 관리자 계정이 자동으로 만들어집니다. 로그인 후 헤더의 **관리자** 버튼으로 이동합니다.
+
+- 이메일: `admin@shoplab.com`
+- 비밀번호: `Admin1234!`
+
+> 로컬 개발용 계정입니다. 운영 환경에서는 생성되지 않습니다.
+
 ## 핵심 구현
 
 ### 주문 재고 동시성
@@ -127,6 +136,15 @@ npm run dev
 
 - 15분간 결제되지 않은 주문을 스케줄러가 취소하고 재고 복구
 - 주문 행 락으로 "결제 승인"과 "자동 취소"가 동시에 일어나는 경쟁 상태 처리
+
+### 관리자 주문·상품 관리
+
+- **주문 상태 일괄 변경**: 주문마다 트랜잭션을 나눠 일부가 실패해도 나머지는 반영하고, 실패한 주문은 사유와 함께 반환
+- 관리자는 배송 단계(결제 완료 → 배송 준비 → 배송 중 → 배송 완료)로만 변경 가능, 주문 행 락으로 사용자 취소와의 경쟁 처리
+- **재고는 증감(입고·차감)으로만 변경**: 값을 덮어쓰면 그사이 판매된 수량이 사라지는 갱신 손실이 생기므로,
+  주문과 같은 상품 행 락을 거쳐 현재 값에서 더하고 빼도록 설계
+- **삭제 대신 숨김(soft delete)**: 주문 상품이 참조하는 상품을 지우지 않고 숨김 처리.
+  숨긴 상품은 입고나 주문 취소로 재고가 복구돼도 숨김 유지
 
 ### 타임딜 재고 동시성 비교
 
@@ -205,10 +223,19 @@ npm run dev
 
 ### TanStack Table 설치 시 `useReactTable`을 찾을 수 없음
 
-- 원인: 버전 없이 설치해 최신 메이저 버전이 설치됨 (API 변경)
-- 해결: `npm install @tanstack/react-table@8`로 메이저 버전을 고정하고 package-lock.json 커밋
+- **원인**: 버전 없이 설치해 최신 메이저 버전이 설치됨 (API 변경)
+- **해결**: `npm install @tanstack/react-table@8`로 메이저 버전을 고정하고 `package-lock.json` 커밋
 
 ### 검색할 때마다 검색 폼이 하나씩 늘어남
 
-- 원인: 형제 컴포넌트(검색 폼, 그리드)에 같은 `key`를 지정해 React가 이전 컴포넌트를 구분하지 못함
-- 해결: `form-${viewKey}`, `table-${viewKey}`처럼 형제끼리 서로 다른 key 사용
+- **원인**: 형제 컴포넌트(검색 폼, 그리드)에 같은 `key`를 지정해 React가 이전 컴포넌트를 구분하지 못함
+- **해결**: `form-${viewKey}`, `table-${viewKey}`처럼 형제끼리 서로 다른 key 사용
+
+### 상품 설명 없이 등록하면 "요청이 중복되었습니다" 오류
+
+- **현상**: 관리자 상품 등록 시 설명을 비우면 실패하고, 화면에는 엉뚱하게 "요청이 중복되었습니다." 표시
+- **원인 1**: `products.description`은 NOT NULL인데 API는 설명을 선택 입력으로 받음 (ORA-01400).
+  Oracle은 빈 문자열(`''`)도 NULL로 저장하므로 빈 문자열을 보내도 같은 오류
+- **원인 2**: `GlobalExceptionHandler`가 모든 `DataIntegrityViolationException`을 중복 요청(유니크 제약 위반)으로 처리
+- **해결**: 설명을 필수 입력으로 변경(서버 `@NotBlank`, 화면 Zod `min(1)`).
+  입력값 검증은 DB에 가기 전에 Bean Validation으로 막고, DB 제약은 최후의 안전장치로 둠

@@ -17,6 +17,9 @@ import TimeDealListPage from '../pages/TimeDealListPage'
 import AdminRoute from '../components/AdminRoute'
 import AdminLayout from '../layouts/AdminLayout'
 import AdminOrdersPage from '../pages/admin/AdminOrdersPage'
+import AdminProductsPage from '../pages/admin/AdminProductsPage'
+import AdminProductNewPage from '../pages/admin/AdminProductNewPage'
+import AdminProductEditPage from '../pages/admin/AdminProductEditPage'
 
 export const router = createBrowserRouter([
   {
@@ -89,6 +92,9 @@ export const router = createBrowserRouter([
         children: [
           { index: true, element: <Navigate to="orders" replace /> },
           { path: 'orders', element: <AdminOrdersPage /> },
+          { path: 'products', element: <AdminProductsPage /> },
+          { path: 'products/new', element: <AdminProductNewPage /> },
+          { path: 'products/:productId/edit', element: <AdminProductEditPage /> },
         ],
       },
     ],
