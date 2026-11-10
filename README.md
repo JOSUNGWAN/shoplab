@@ -199,6 +199,9 @@ npm run dev
 | PUT    | `/api/admin/products/{id}`            | 상품 정보 수정                                      | 관리자 |
 | PATCH  | `/api/admin/products/{id}/stock`      | 재고 입고·차감                                      | 관리자 |
 | PATCH  | `/api/admin/products/{id}/visibility` | 상품 숨김 / 다시 보이기                             | 관리자 |
+| GET    | `/api/admin/dashboard/summary`        | 대시보드 요약                                       | 관리자 |
+| GET    | `/api/admin/dashboard/daily-sales`    | 일별 매출·주문 수                                   | 관리자 |
+| GET    | `/api/admin/dashboard/top-products`   | 상품별 판매 순위                                    | 관리자 |
 
 ## 트러블슈팅
 

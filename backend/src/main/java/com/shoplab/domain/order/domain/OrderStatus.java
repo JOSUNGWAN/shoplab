@@ -1,5 +1,7 @@
 package com.shoplab.domain.order.domain;
 
+import java.util.List;
+
 public enum OrderStatus {
     PENDING_PAYMENT, PAID, PREPARING, SHIPPING, DELIVERED, CANCELED;
 
@@ -22,4 +24,7 @@ public enum OrderStatus {
     public boolean isAdminProgressTarget() {
         return this == PREPARING || this == SHIPPING || this == DELIVERED;
     }
+
+    /** 매출로 집계하는 상태: 결제 완료 이후 (결제 대기·취소 제외) */
+    public static final List<OrderStatus> SALES_STATUSES = List.of(PAID, PREPARING, SHIPPING, DELIVERED);
 }

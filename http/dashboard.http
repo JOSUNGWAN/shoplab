@@ -1,0 +1,36 @@
+@adminToken = {{adminLogin.response.body.$.data.accessToken}}
+
+### 0. 관리자 로그인
+# @name adminLogin
+POST http://localhost:8080/api/auth/login
+Content-Type: application/json
+
+{ "email": "admin@shoplab.com", "password": "Admin1234!" }
+
+### 1. 요약
+GET http://localhost:8080/api/admin/dashboard/summary
+Authorization: Bearer {{adminToken}}
+
+### 2. 일별 매출 (기본: 최근 14일)
+GET http://localhost:8080/api/admin/dashboard/daily-sales
+Authorization: Bearer {{adminToken}}
+
+### 3. 일별 매출 (기간 지정)
+GET http://localhost:8080/api/admin/dashboard/daily-sales?from=2026-10-01&to=2026-11-10
+Authorization: Bearer {{adminToken}}
+
+### 4. 기간 92일 초과 → 400
+GET http://localhost:8080/api/admin/dashboard/daily-sales?from=2026-01-01&to=2026-11-10
+Authorization: Bearer {{adminToken}}
+
+### 5. 판매 순위 (최근 14일, 상위 5개)
+GET http://localhost:8080/api/admin/dashboard/top-products
+Authorization: Bearer {{adminToken}}
+
+### 6. 판매 순위 (상위 3개, 기간 지정)
+GET http://localhost:8080/api/admin/dashboard/top-products?from=2026-10-01&to=2026-11-10&limit=3
+Authorization: Bearer {{adminToken}}
+
+### 7. limit 범위 밖 → 400
+GET http://localhost:8080/api/admin/dashboard/top-products?limit=50
+Authorization: Bearer {{adminToken}}
