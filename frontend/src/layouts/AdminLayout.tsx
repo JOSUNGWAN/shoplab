@@ -12,6 +12,9 @@ export default function AdminLayout() {
             ShopLab <span className="text-sm font-normal text-gray-400">Admin</span>
           </Link>
           <nav className="flex gap-5 text-sm">
+            <NavLink to="/admin/dashboard" className={navClass}>
+              대시보드
+            </NavLink>
             <NavLink to="/admin/orders" className={navClass}>
               주문 관리
             </NavLink>

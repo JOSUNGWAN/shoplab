@@ -16,19 +16,19 @@ Spring Boot와 React로 만드는 쇼핑몰 포트폴리오 프로젝트입니�
 - [x] 장바구니
 - [x] 주문·결제 (비관적 락 재고 차감, 토스페이먼츠 결제·환불, 미결제 주문 자동 취소)
 - [x] 타임딜 (Redis Lua 선차감 + DB 조건부 UPDATE, 1인 1개, 카운트다운 화면)
-- [ ] 관리자 페이지 (주문 관리·상품 관리 완료, 매출 대시보드 진행 예정)
+- [x] 관리자 페이지 (주문 일괄 처리, 상품·재고 관리, 매출 대시보드)
 - [ ] 배포 (AWS, CI/CD)
 
 ## 기술 스택
 
-| 구분     | 기술                                                                                                                   |
-| -------- | ---------------------------------------------------------------------------------------------------------------------- |
-| Backend  | Java 21, Spring Boot 4.1, Spring Data JPA, QueryDSL, Spring Security, JWT (jjwt), RestClient                           |
-| Frontend | React 19, TypeScript, Vite, React Router, TanStack Query, TanStack Table, Zustand, React Hook Form + Zod, Tailwind CSS |
-| Database | Oracle 21c XE, Redis 7                                                                                                 |
-| Payment  | 토스페이먼츠 결제위젯(주문서형) v2                                                                                     |
-| Infra    | Docker, Docker Compose                                                                                                 |
-| Test     | JUnit 5, Mockito                                                                                                       |
+| 구분     | 기술                                                                                                                             |
+| -------- | -------------------------------------------------------------------------------------------------------------------------------- |
+| Backend  | Java 21, Spring Boot 4.1, Spring Data JPA, QueryDSL, Spring Security, JWT (jjwt), RestClient                                     |
+| Frontend | React 19, TypeScript, Vite, React Router, TanStack Query, TanStack Table, Recharts, Zustand, React Hook Form + Zod, Tailwind CSS |
+| Database | Oracle 21c XE, Redis 7                                                                                                           |
+| Payment  | 토스페이먼츠 결제위젯(주문서형) v2                                                                                               |
+| Infra    | Docker, Docker Compose                                                                                                           |
+| Test     | JUnit 5, Mockito                                                                                                                 |
 
 ## 프로젝트 구조
 
@@ -145,6 +145,8 @@ npm run dev
   주문과 같은 상품 행 락을 거쳐 현재 값에서 더하고 빼도록 설계
 - **삭제 대신 숨김(soft delete)**: 주문 상품이 참조하는 상품을 지우지 않고 숨김 처리.
   숨긴 상품은 입고나 주문 취소로 재고가 복구돼도 숨김 유지
+- **매출 대시보드**: 통계는 JPA 대신 SQL(`NamedParameterJdbcTemplate`)로 집계하고, 매출 기준 상태(결제 완료 이후, 취소 제외)를 한 곳에 정의.
+  요약 카드에서 검색 조건이 담긴 URL로 주문·상품 관리 화면에 바로 이동
 
 ### 타임딜 재고 동시성 비교
 

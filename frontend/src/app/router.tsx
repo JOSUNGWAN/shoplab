@@ -20,6 +20,7 @@ import AdminOrdersPage from '../pages/admin/AdminOrdersPage'
 import AdminProductsPage from '../pages/admin/AdminProductsPage'
 import AdminProductNewPage from '../pages/admin/AdminProductNewPage'
 import AdminProductEditPage from '../pages/admin/AdminProductEditPage'
+import AdminDashboardPage from '../pages/admin/AdminDashboardPage'
 
 export const router = createBrowserRouter([
   {
@@ -90,7 +91,8 @@ export const router = createBrowserRouter([
       {
         element: <AdminLayout />,
         children: [
-          { index: true, element: <Navigate to="orders" replace /> },
+          { index: true, element: <Navigate to="dashboard" replace /> },
+          { path: 'dashboard', element: <AdminDashboardPage /> },
           { path: 'orders', element: <AdminOrdersPage /> },
           { path: 'products', element: <AdminProductsPage /> },
           { path: 'products/new', element: <AdminProductNewPage /> },
